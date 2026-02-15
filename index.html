@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoCare Pro - Gestão Inteligente de Manutenção Veicular</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Configurações Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#0f172a',
+                        secondary: '#1e293b',
+                        accent: '#3b82f6',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        info: '#06b6d4',
+                        sidebar: '#1e293b',
+                        sidebarHover: '#334155'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Animações do usuário */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideInUp {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slideInDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slideInLeft {
+            from { transform: translateX(-10px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(10px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .animate-fade-in { animation: fadeIn 0.3s ease-in; }
+        .animate-slide-up { animation: slideInUp 0.3s ease-out; }
+        .animate-slide-down { animation: slideInDown 0.3s ease-out; }
+        .animate-slide-left { animation: slideInLeft 0.3s ease-out; }
+        .animate-slide-right { animation: slideInRight 0.3s ease-out; }
+        .animate-spin { animation: spin 1s linear infinite; }
+        .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+        
+        /* NOVO: Sidebar oculta com hover */
+        .sidebar-container {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 50;
+            width: 20px;
+            transition: width 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .sidebar-container:hover {
+            width: 280px;
+        }
+        
+        .sidebar-content {
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            opacity: 0;
+            transition: opacity 0.2s ease 0.1s;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-container:hover .sidebar-content {
+            opacity: 1;
+        }
+        
+        /* Indicador visual de que há sidebar */
+        .sidebar-indicator {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60px;
+            background: #3b82f6;
+            border-radius: 0 4px 4px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-container:hover .sidebar-indicator {
+            opacity: 0;
+        }
+        
+        /* Botões da sidebar - CORRIGIDO: fundo escuro visível */
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            margin: 4px 12px;
+            border-radius: 12px;
+            color: #94a3b8;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sidebar-btn::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #3b82f6;
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-btn:hover {
+            background: rgba(59, 130, 246, 0.15);
+            color: white;
+            transform: translateX(5px);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .sidebar-btn:hover::before {
+            transform: scaleY(1);
+        }
+        
+        .sidebar-btn.active {
+            background: rgba(59, 130, 246, 0.25);
+            color: white;
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        .sidebar-btn.active::before {
+            transform: scaleY(1);
+        }
+        
+        .sidebar-btn i {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        /* Badge de notificação */
+        .sidebar-badge {
+            margin-left: auto;
+            background: #ef4444;
+            color: white;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        
+        .sidebar-badge.green {
+            background: #10b981;
+        }
+        
+        /* Logo na sidebar */
+        .sidebar-logo {
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* Footer da sidebar */
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        /* Conteúdo principal ajustado */
+        .main-content {
+            margin-left: 20px;
+            transition: margin-left 0.3s ease;
+        }
+        
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Cards hover */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Scrollbar customizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        
+        /* Toast */
+        #toast {
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* Modais */
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        /* Gradientes */
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+        
+        /* Status indicators */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        /* Tooltips */
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 10px;
+            padding: 6px 12px;
+            background: #0f172a;
+            color: white;
+            font-size: 12px;
+            border-radius: 6px;
+            white-space: nowrap;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+
+    <!-- APP CONTAINER -->
+    <div id="app" class="min-h-screen">
+        
+        <!-- AUTH SECTION -->
+        <div id="auth-section" class="gradient-bg min-h-screen flex items-center justify-center p-4">
+            <div class="w-full max-w-md">
+                <!-- Logo -->
+                <div class="text-center mb-8 animate-fade-in">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl mb-4 shadow-2xl shadow-blue-500/30">
+                        <i class="fas fa-car text-4xl text-white"></i>
+                    </div>
+                    <h1 class="text-4xl font-bold text-white mb-2 tracking-tight">AutoCare Pro</h1>
+                    <p class="text-blue-200 text-lg">Gestão inteligente de manutenção veicular</p>
+                </div>
+
+                <!-- Login Form -->
+                <div id="login-form" class="glass rounded-2xl p-8 animate-slide-up">
+                    <h2 class="text-2xl font-bold text-white mb-6 text-center">Bem-vindo de volta</h2>
+                    <form id="form-login" class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-200 mb-2">E-mail</label>
+                            <div class="relative">
+                                <i class="fas fa-envelope absolute left-4 top-3.5 text-gray-400"></i>
+                                <input type="email" id="login-email" required 
+                                    class="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                                    placeholder="seu@email.com">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-200 mb-2">Senha</label>
+                            <div class="relative">
+                                <i class="fas fa-lock absolute left-4 top-3.5 text-gray-400"></i>
+                                <input type="password" id="login-password" required 
+                                    class="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                                    placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <label class="flex items-center text-blue-200 cursor-pointer">
+                                <input type="checkbox" id="login-remember" class="mr-2 rounded bg-gray-700 border-gray-600 text-blue-500">
+                                Lembrar-me
+                            </label>
+                            <button type="button" id="btn-forgot-password" class="text-blue-400 hover:text-blue-300 transition-colors">
+                                Esqueceu a senha?
+                            </button>
+                        </div>
+                        <button type="submit" id="btn-login"
+                            class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
+                            <span>Entrar</span>
+                            <div class="spinner hidden" id="login-spinner"></div>
+                        </button>
+                    </form>
+                    <div class="mt-6 text-center">
+                        <p class="text-blue-200 text-sm">
+                            Não tem uma conta? 
+                            <button id="btn-show-register" class="text-blue-400 hover:text-blue-300 font-semibold ml-1 transition-colors">
+                                Cadastre-se
+                            </button>
+                        </p>
+                    </div>
+                    <div class="mt-4 p-4 bg-blue-900/30 rounded-xl border border-blue-500/30">
+                        <p class="text-sm text-blue-200 text-center">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>Demo:</strong> demo@autocare.com / 123456
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Register Form -->
+                <div id="register-form" class="glass rounded-2xl p-8 hidden animate-slide-up">
+                    <h2 class="text-2xl font-bold text-white mb-6 text-center">Criar nova conta</h2>
+                    <form id="form-register" class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-200 mb-2">Nome completo</label>
+                            <div class="relative">
+                                <i class="fas fa-user absolute left-4 top-3.5 text-gray-400"></i>
+                                <input type="text" id="register-name" required 
+                                    class="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                                    placeholder="Seu nome completo">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-200 mb-2">E-mail</label>
+                            <div class="relative">
+                                <i class="fas fa-envelope absolute left-4 top-3.5 text-gray-400"></i>
+                                <input type="email" id="register-email" required 
+                                    class="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                                    placeholder="seu@email.com">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-200 mb-2">Senha</label>
+                            <div class="relative">
+                                <i class="fas fa-lock absolute left-4 top-3.5 text-gray-400"></i>
+                                <input type="password" id="register-password" required minlength="6"
+                                    class="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                                    placeholder="Mínimo 6 caracteres">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-blue-200 mb-2">Confirmar senha</label>
+                            <div class="relative">
+                                <i class="fas fa-lock absolute left-4 top-3.5 text-gray-400"></i>
+                                <input type="password" id="register-password-confirm" required 
+                                    class="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                                    placeholder="Repita a senha">
+                            </div>
+                        </div>
+                        <button type="submit" id="btn-register"
+                            class="w-full py-3.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] shadow-lg shadow-green-600/30 flex items-center justify-center gap-2">
+                            <span>Criar conta</span>
+                            <div class="spinner hidden" id="register-spinner"></div>
+                        </button>
+                    </form>
+                    <div class="mt-6 text-center">
+                        <p class="text-blue-200 text-sm">
+                            Já tem uma conta? 
+                            <button id="btn-show-login" class="text-blue-400 hover:text-blue-300 font-semibold ml-1 transition-colors">
+                                Faça login
+                            </button>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Forgot Password Form -->
+                <div id="forgot-form" class="glass rounded-2xl p-8 hidden animate-slide-up">
+                    <h2 class="text-2xl font-bold text-white mb-2 text-center">Recuperar senha</h2>
+                    <p class="text-blue-200 text-center mb-6 text-sm">Digite seu e-mail para receber as instruções</p>
+                    <form id="form-forgot" class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-blue-200 mb-2">E-mail</label>
+                            <div class="relative">
+                                <i class="fas fa-envelope absolute left-4 top-3.5 text-gray-400"></i>
+                                <input type="email" id="forgot-email" required 
+                                    class="w-full pl-12 pr-4 py-3 bg-gray-900/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                                    placeholder="seu@email.com">
+                            </div>
+                        </div>
+                        <button type="submit" id="btn-forgot-submit"
+                            class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2">
+                            <span>Enviar instruções</span>
+                            <div class="spinner hidden" id="forgot-spinner"></div>
+                        </button>
+                    </form>
+                    <div class="mt-6 text-center">
+                        <button id="btn-back-login" class="text-blue-200 hover:text-white text-sm transition-colors flex items-center justify-center gap-2">
+                            <i class="fas fa-arrow-left"></i> Voltar para login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN APP -->
+        <div id="main-app" class="hidden">
+            
+            <!-- MOBILE HEADER -->
+            <div class="lg:hidden bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 flex items-center justify-between sticky top-0 z-40 shadow-lg">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-car text-xl"></i>
+                    </div>
+                    <span class="font-bold text-lg">AutoCare Pro</span>
+                </div>
+                <button id="btn-mobile-menu" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+
+            <!-- SIDEBAR OCULTA COM HOVER -->
+            <div class="sidebar-container hidden lg:block" id="sidebar">
+                <div class="sidebar-indicator"></div>
+                <div class="sidebar-content">
+                    <!-- Logo -->
+                    <div class="sidebar-logo">
+                        <div class="flex items-center gap-4">
+                            <div class="sidebar-logo-icon">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <div>
+                                <h1 class="font-bold text-xl text-white">AutoCare</h1>
+                                <p class="text-xs text-blue-300">Gestão Veicular</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <nav class="flex-1 py-6 space-y-2 overflow-y-auto">
+                        <button data-section="dashboard" class="sidebar-btn active w-full text-left">
+                            <i class="fas fa-home"></i>
+                            <span class="font-medium">Dashboard</span>
+                            <span class="sidebar-badge hidden" id="badge-dashboard">!</span>
+                        </button>
+                        
+                        <button data-section="vehicles" class="sidebar-btn w-full text-left">
+                            <i class="fas fa-car-side"></i>
+                            <span class="font-medium">Meus Veículos</span>
+                        </button>
+                        
+                        <button data-section="maintenance" class="sidebar-btn w-full text-left">
+                            <i class="fas fa-wrench"></i>
+                            <span class="font-medium">Manutenções</span>
+                            <span class="sidebar-badge hidden" id="badge-maintenance">0</span>
+                        </button>
+                        
+                        <button data-section="providers" class="sidebar-btn w-full text-left">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span class="font-medium">Prestadores</span>
+                            <span class="sidebar-badge green">Novo</span>
+                        </button>
+                        
+                        <button data-section="notifications" class="sidebar-btn w-full text-left">
+                            <i class="fas fa-bell"></i>
+                            <span class="font-medium">Notificações</span>
+                            <span class="sidebar-badge hidden" id="badge-notifications">0</span>
+                        </button>
+                    </nav>
+
+                    <!-- User Footer -->
+                    <div class="sidebar-footer">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="user-avatar" id="user-avatar">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p id="user-name" class="font-semibold text-sm text-white truncate">Usuário</p>
+                                <p id="user-email" class="text-xs text-blue-300 truncate">email@exemplo.com</p>
+                            </div>
+                        </div>
+                        <button id="btn-logout" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all border border-red-500/20 hover:border-red-500/40">
+                            <i class="fas fa-sign-out-alt text-lg"></i>
+                            <span class="font-medium">Sair</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MOBILE SIDEBAR OVERLAY -->
+            <div id="mobile-sidebar" class="fixed inset-0 z-50 hidden lg:hidden">
+                <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="mobile-overlay"></div>
+                <div class="absolute left-0 top-0 bottom-0 w-72 bg-gradient-to-b from-slate-900 to-slate-800 transform -translate-x-full transition-transform duration-300" id="mobile-sidebar-content">
+                    <div class="p-6 border-b border-white/10 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-car text-white"></i>
+                            </div>
+                            <span class="font-bold text-white">AutoCare Pro</span>
+                        </div>
+                        <button id="btn-close-mobile" class="p-2 hover:bg-white/10 rounded-lg text-white">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <nav class="p-4 space-y-2">
+                        <button data-section="dashboard" class="mobile-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white hover:bg-white/10 transition-colors">
+                            <i class="fas fa-home w-6"></i> Dashboard
+                        </button>
+                        <button data-section="vehicles" class="mobile-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white hover:bg-white/10 transition-colors">
+                            <i class="fas fa-car-side w-6"></i> Meus Veículos
+                        </button>
+                        <button data-section="maintenance" class="mobile-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white hover:bg-white/10 transition-colors">
+                            <i class="fas fa-wrench w-6"></i> Manutenções
+                        </button>
+                        <button data-section="providers" class="mobile-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white hover:bg-white/10 transition-colors">
+                            <i class="fas fa-map-marker-alt w-6"></i> Prestadores
+                        </button>
+                        <button data-section="notifications" class="mobile-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white hover:bg-white/10 transition-colors">
+                            <i class="fas fa-bell w-6"></i> Notificações
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- MAIN CONTENT -->
+            <main class="main-content min-h-screen bg-gray-50">
+                
+                <!-- Top Bar -->
+                <div class="bg-white shadow-sm sticky top-0 z-30 px-6 py-4 flex items-center justify-between">
+                    <div>
+                        <h2 id="page-title" class="text-2xl font-bold text-gray-800">Dashboard</h2>
+                        <p id="current-date" class="text-sm text-gray-500 mt-1"></p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button id="btn-header-notif" class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors rounded-xl hover:bg-blue-50">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span id="header-badge" class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full hidden animate-pulse"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6 max-w-7xl mx-auto">
+
+                    <!-- DASHBOARD SECTION -->
+                    <div id="section-dashboard" class="space-y-6 animate-fade-in">
+                        
+                        <!-- Stats Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card-hover">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="w-14 h-14 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center">
+                                        <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">Em dia</span>
+                                </div>
+                                <h3 id="stat-ok" class="text-4xl font-bold text-gray-800">0</h3>
+                                <p class="text-sm text-gray-500 mt-1">Manutenções em dia</p>
+                            </div>
+
+                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card-hover">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="w-14 h-14 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-2xl flex items-center justify-center">
+                                        <i class="fas fa-exclamation-triangle text-yellow-600 text-2xl"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full">Atenção</span>
+                                </div>
+                                <h3 id="stat-warning" class="text-4xl font-bold text-gray-800">0</h3>
+                                <p class="text-sm text-gray-500 mt-1">Próximas do vencimento</p>
+                            </div>
+
+                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card-hover">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="w-14 h-14 bg-gradient-to-br from-red-100 to-red-200 rounded-2xl flex items-center justify-center">
+                                        <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-red-600 bg-red-100 px-3 py-1 rounded-full">Urgente</span>
+                                </div>
+                                <h3 id="stat-overdue" class="text-4xl font-bold text-gray-800">0</h3>
+                                <p class="text-sm text-gray-500 mt-1">Manutenções vencidas</p>
+                            </div>
+
+                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card-hover">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center">
+                                        <i class="fas fa-car text-blue-600 text-2xl"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">Total</span>
+                                </div>
+                                <h3 id="stat-vehicles" class="text-4xl font-bold text-gray-800">0</h3>
+                                <p class="text-sm text-gray-500 mt-1">Veículos cadastrados</p>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions & Next Maintenance -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Quick Actions -->
+                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                                <h3 class="font-bold text-lg mb-4 flex items-center gap-2 text-gray-800">
+                                    <i class="fas fa-bolt text-yellow-500"></i>
+                                    Ações Rápidas
+                                </h3>
+                                <div class="space-y-3">
+                                    <button id="btn-quick-add-vehicle" class="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-blue-500 hover:bg-blue-50 transition-all group">
+                                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                                            <i class="fas fa-plus text-blue-600 text-xl"></i>
+                                        </div>
+                                        <div class="text-left">
+                                            <p class="font-semibold text-gray-800">Adicionar Veículo</p>
+                                            <p class="text-xs text-gray-500">Cadastrar novo veículo</p>
+                                        </div>
+                                    </button>
+                                    
+                                    <button id="btn-quick-add-maintenance" class="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-green-500 hover:bg-green-50 transition-all group">
+                                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                                            <i class="fas fa-wrench text-green-600 text-xl"></i>
+                                        </div>
+                                        <div class="text-left">
+                                            <p class="font-semibold text-gray-800">Nova Manutenção</p>
+                                            <p class="text-xs text-gray-500">Registrar serviço</p>
+                                        </div>
+                                    </button>
+                                    
+                                    <button id="btn-quick-providers" class="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-purple-500 hover:bg-purple-50 transition-all group">
+                                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                                            <i class="fas fa-search text-purple-600 text-xl"></i>
+                                        </div>
+                                        <div class="text-left">
+                                            <p class="font-semibold text-gray-800">Encontrar Prestador</p>
+                                            <p class="text-xs text-gray-500">Mecânicas próximas</p>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Next Maintenances -->
+                            <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="font-bold text-lg flex items-center gap-2 text-gray-800">
+                                        <i class="fas fa-clock text-blue-500"></i>
+                                        Próximas Manutenções
+                                    </h3>
+                                    <button data-section="maintenance" class="btn-navigate text-sm text-blue-600 hover:text-blue-700 font-semibold">
+                                        Ver todas <i class="fas fa-arrow-right ml-1"></i>
+                                    </button>
+                                </div>
+                                <div id="next-maintenances-list" class="space-y-3">
+                                    <!-- Dynamic content -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vehicle Overview -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-lg mb-4 flex items-center gap-2 text-gray-800">
+                                <i class="fas fa-car text-blue-500"></i>
+                                Resumo dos Veículos
+                            </h3>
+                            <div id="vehicles-overview" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Dynamic content -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VEHICLES SECTION -->
+                    <div id="section-vehicles" class="hidden space-y-6 animate-fade-in">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <select id="vehicle-filter" class="px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none bg-white font-medium">
+                                    <option value="all">Todos os veículos</option>
+                                    <option value="active">Ativos</option>
+                                    <option value="maintenance">Em manutenção</option>
+                                </select>
+                            </div>
+                            <button id="btn-add-vehicle" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-blue-600/30 font-semibold">
+                                <i class="fas fa-plus"></i>
+                                Adicionar Veículo
+                            </button>
+                        </div>
+
+                        <div id="vehicles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Dynamic content -->
+                        </div>
+
+                        <div id="empty-vehicles" class="hidden text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-car text-4xl text-gray-400"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Nenhum veículo cadastrado</h3>
+                            <p class="text-gray-500 mb-6">Comece adicionando seu primeiro veículo</p>
+                            <button id="btn-empty-add-vehicle" class="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors font-semibold shadow-lg">
+                                Adicionar Veículo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- MAINTENANCE SECTION -->
+                    <div id="section-maintenance" class="hidden space-y-6 animate-fade-in">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div class="flex items-center gap-2 bg-white p-1.5 rounded-xl border-2 border-gray-200">
+                                <button data-filter="all" class="filter-btn px-5 py-2 rounded-lg text-sm font-semibold bg-blue-100 text-blue-700 transition-all">Todas</button>
+                                <button data-filter="ok" class="filter-btn px-5 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all">Em dia</button>
+                                <button data-filter="warning" class="filter-btn px-5 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all">Próximas</button>
+                                <button data-filter="overdue" class="filter-btn px-5 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all">Vencidas</button>
+                            </div>
+                            <button id="btn-add-maintenance" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-blue-600/30 font-semibold">
+                                <i class="fas fa-plus"></i>
+                                Nova Manutenção
+                            </button>
+                        </div>
+
+                        <div id="maintenance-list" class="space-y-4">
+                            <!-- Dynamic content -->
+                        </div>
+
+                        <div id="empty-maintenance" class="hidden text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-wrench text-4xl text-gray-400"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Nenhuma manutenção registrada</h3>
+                            <p class="text-gray-500 mb-6">Registre sua primeira manutenção preventiva ou corretiva</p>
+                            <button id="btn-empty-add-maintenance" class="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors font-semibold shadow-lg">
+                                Registrar Manutenção
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PROVIDERS SECTION -->
+                    <div id="section-providers" class="hidden space-y-6 animate-fade-in">
+                        <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-6 text-white">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="text-2xl font-bold mb-1">Encontre mecânicas próximas</h3>
+                                    <p class="text-blue-100 text-sm">Busque oficinas reais com avaliações, fotos e horários</p>
+                                </div>
+                                <div class="hidden sm:block text-right">
+                                    <div class="text-3xl font-bold" id="providers-count">0</div>
+                                    <div class="text-xs text-blue-200">encontradas</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <div class="relative flex-1">
+                                    <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                                    <input type="text" id="provider-search" placeholder="Buscar por nome, serviço ou endereço..." 
+                                        class="w-full pl-12 pr-4 py-3 rounded-xl text-gray-800 outline-none focus:ring-2 focus:ring-blue-300 font-medium">
+                                </div>
+                                <select id="provider-type" class="px-4 py-3 rounded-xl text-gray-800 outline-none focus:ring-2 focus:ring-blue-300 bg-white font-medium">
+                                    <option value="all">Todos os tipos</option>
+                                    <option value="mechanic">Mecânica</option>
+                                    <option value="electric">Elétrica</option>
+                                    <option value="tire">Borracharia</option>
+                                    <option value="body">Funilaria</option>
+                                    <option value="detailing">Estética</option>
+                                </select>
+                                <button id="btn-search-nearby" class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-semibold transition-all flex items-center gap-2 shadow-lg">
+                                    <i class="fas fa-location-arrow"></i>
+                                    <span class="hidden sm:inline">Buscar Próximas</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-4 bg-white p-4 rounded-xl border-2 border-gray-100">
+                            <div class="flex items-center gap-2 text-sm text-gray-600">
+                                <i class="fas fa-map-marker-alt text-blue-600 text-lg"></i>
+                                <span data-location-text>Sua localização atual</span>
+                            </div>
+                            <div class="flex-1"></div>
+                            <button id="btn-update-location" class="text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                                <i class="fas fa-sync-alt"></i> Atualizar localização
+                            </button>
+                            <div class="text-xs text-gray-500 px-3 py-1.5 bg-gray-100 rounded-lg font-medium">
+                                Raio: 5km
+                            </div>
+                        </div>
+
+                        <div id="providers-loader" class="hidden text-center py-16">
+                            <div class="inline-block w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                            <p class="mt-4 text-gray-500 font-medium">Buscando mecânicas próximas...</p>
+                        </div>
+
+                        <div id="providers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Dynamic content -->
+                        </div>
+                    </div>
+
+                    <!-- NOTIFICATIONS SECTION -->
+                    <div id="section-notifications" class="hidden space-y-6 animate-fade-in">
+                        <div class="bg-white rounded-2xl shadow-sm border-2 border-gray-100 overflow-hidden">
+                            <div class="p-6 border-b-2 border-gray-100 flex items-center justify-between">
+                                <h3 class="font-bold text-xl text-gray-800 flex items-center gap-2">
+                                    <i class="fas fa-bell text-blue-500"></i>
+                                    Central de Notificações
+                                </h3>
+                                <button id="btn-mark-all-read" class="text-sm text-blue-600 hover:text-blue-700 font-semibold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                                    Marcar todas como lidas
+                                </button>
+                            </div>
+                            <div id="notifications-list" class="divide-y divide-gray-100">
+                                <!-- Dynamic content -->
+                            </div>
+                            <div id="empty-notifications" class="hidden text-center py-16">
+                                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-bell-slash text-4xl text-gray-400"></i>
+                                </div>
+                                <p class="text-gray-500 font-medium">Nenhuma notificação no momento</p>
+                            </div>
+                        </div>
+
+                        <!-- Notification Settings -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border-2 border-gray-100">
+                            <h3 class="font-bold text-xl mb-6 flex items-center gap-2 text-gray-800">
+                                <i class="fas fa-cog text-gray-500"></i>
+                                Configurações de Alerta
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-200">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Alerta antecipado por tempo</p>
+                                        <p class="text-sm text-gray-500">Notificar dias antes do vencimento</p>
+                                    </div>
+                                    <select id="alert-days" class="px-4 py-2.5 border-2 border-gray-300 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white font-medium">
+                                        <option value="7">7 dias</option>
+                                        <option value="15">15 dias</option>
+                                        <option value="30" selected>30 dias</option>
+                                        <option value="45">45 dias</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-200">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Alerta antecipado por quilometragem</p>
+                                        <p class="text-sm text-gray-500">Notificar km antes do vencimento</p>
+                                    </div>
+                                    <select id="alert-km" class="px-4 py-2.5 border-2 border-gray-300 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white font-medium">
+                                        <option value="500">500 km</option>
+                                        <option value="1000" selected>1.000 km</option>
+                                        <option value="2000">2.000 km</option>
+                                        <option value="5000">5.000 km</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-200">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Notificações por e-mail</p>
+                                        <p class="text-sm text-gray-500">Receber alertas no e-mail cadastrado</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="email-notifications" class="sr-only peer" checked>
+                                        <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+
+    </div>
+
+    <!-- MODAIS -->
+
+    <!-- Add Vehicle Modal -->
+    <div id="modal-vehicle" class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-slide-up shadow-2xl">
+            <div class="p-6 border-b-2 border-gray-100 flex items-center justify-between sticky top-0 bg-white rounded-t-2xl z-10">
+                <h3 class="text-xl font-bold text-gray-800">Adicionar Veículo</h3>
+                <button class="btn-close-modal w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors" data-modal="modal-vehicle">
+                    <i class="fas fa-times text-gray-500 text-lg"></i>
+                </button>
+            </div>
+            <form id="form-add-vehicle" class="p-6 space-y-5">
+                <div id="vehicle-image-preview" class="hidden"></div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Apelido do Veículo (opcional)</label>
+                        <input type="text" id="vehicle-nickname" 
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                            placeholder="Ex: Meu Carro, Carro da Família">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Marca *</label>
+                        <select id="vehicle-brand" required
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white">
+                            <option value="">Selecione...</option>
+                            <option value="Chevrolet">Chevrolet</option>
+                            <option value="Fiat">Fiat</option>
+                            <option value="Ford">Ford</option>
+                            <option value="Honda">Honda</option>
+                            <option value="Hyundai">Hyundai</option>
+                            <option value="Renault">Renault</option>
+                            <option value="Toyota">Toyota</option>
+                            <option value="Volkswagen">Volkswagen</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Modelo *</label>
+                        <input type="text" id="vehicle-model" required 
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                            placeholder="Ex: Onix, Gol, Civic">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Ano *</label>
+                        <input type="number" id="vehicle-year" required min="1900" max="2030"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                            placeholder="2023">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Placa *</label>
+                        <input type="text" id="vehicle-plate" required 
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all uppercase"
+                            placeholder="ABC-1234">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Quilometragem Atual *</label>
+                    <input type="number" id="vehicle-km" required min="0"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                        placeholder="0">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tipo de Combustível *</label>
+                    <select id="vehicle-fuel" required
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white">
+                        <option value="">Selecione...</option>
+                        <option value="gasoline">Gasolina</option>
+                        <option value="ethanol">Etanol</option>
+                        <option value="flex">Flex</option>
+                        <option value="diesel">Diesel</option>
+                        <option value="gnv">GNV</option>
+                        <option value="electric">Elétrico</option>
+                        <option value="hybrid">Híbrido</option>
+                    </select>
+                </div>
+                
+                <div class="pt-4 flex gap-3">
+                    <button type="button" class="btn-close-modal flex-1 px-6 py-3.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold" data-modal="modal-vehicle">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                        class="flex-1 px-6 py-3.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg shadow-blue-600/30">
+                        Salvar Veículo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Maintenance Modal -->
+    <div id="modal-maintenance" class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-slide-up shadow-2xl">
+            <div class="p-6 border-b-2 border-gray-100 flex items-center justify-between sticky top-0 bg-white rounded-t-2xl z-10">
+                <h3 class="text-xl font-bold text-gray-800">Registrar Manutenção</h3>
+                <button class="btn-close-modal w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors" data-modal="modal-maintenance">
+                    <i class="fas fa-times text-gray-500 text-lg"></i>
+                </button>
+            </div>
+            <form id="form-add-maintenance" class="p-6 space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Veículo *</label>
+                    <select id="maint-vehicle" required
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white">
+                        <option value="">Selecione o veículo...</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tipo de Serviço *</label>
+                    <select id="maint-type" required
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white">
+                        <option value="">Selecione...</option>
+                        <option value="oil">Troca de Óleo</option>
+                        <option value="tire">Rodízio/Alinhamento</option>
+                        <option value="brake">Pastilhas de Freio</option>
+                        <option value="belt">Correia Dentada</option>
+                        <option value="filter">Filtros (Ar/Óleo/Combustível)</option>
+                        <option value="battery">Bateria</option>
+                        <option value="review">Revisão Geral</option>
+                        <option value="other">Outro</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nome do Serviço *</label>
+                    <input type="text" id="maint-name" required 
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                        placeholder="Ex: Troca de óleo motor">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Descrição</label>
+                    <textarea id="maint-desc" rows="3"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
+                        placeholder="Detalhes adicionais sobre o serviço..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Data da Execução *</label>
+                        <input type="date" id="maint-date" required 
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">KM Atual do Veículo *</label>
+                        <input type="number" id="maint-km" required min="0"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                            placeholder="0">
+                    </div>
+                </div>
+                
+                <div class="border-t-2 border-gray-100 pt-5">
+                    <p class="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-bell text-yellow-500"></i>
+                        Prazo para Próxima Manutenção
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Por Tempo (dias)</label>
+                            <input type="number" id="maint-next-days" min="0"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                placeholder="Ex: 180 (6 meses)">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-2">Por KM</label>
+                            <input type="number" id="maint-next-km" min="0"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                placeholder="Ex: 10000">
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3">Deixe em branco se não souber ou preencha ambos</p>
+                </div>
+                
+                <div class="pt-4 flex gap-3">
+                    <button type="button" class="btn-close-modal flex-1 px-6 py-3.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold" data-modal="modal-maintenance">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                        class="flex-1 px-6 py-3.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg shadow-blue-600/30">
+                        Registrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Update KM Modal -->
+    <div id="modal-update-km" class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md animate-slide-up shadow-2xl">
+            <div class="p-6 border-b-2 border-gray-100">
+                <h3 class="text-xl font-bold text-gray-800">Atualizar Quilometragem</h3>
+                <p class="text-sm text-gray-500 mt-1" id="update-km-vehicle-name"></p>
+            </div>
+            <form id="form-update-km" class="p-6 space-y-5">
+                <input type="hidden" id="update-km-vehicle-id">
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Quilometragem Atual</label>
+                    <input type="number" id="current-km-display" disabled 
+                        class="w-full px-4 py-3 bg-gray-100 border-2 border-gray-200 rounded-xl text-gray-600 font-medium">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nova Quilometragem *</label>
+                    <input type="number" id="new-km" required min="0"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                        placeholder="0">
+                </div>
+                
+                <div class="pt-4 flex gap-3">
+                    <button type="button" class="btn-close-modal flex-1 px-6 py-3.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold" data-modal="modal-update-km">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                        class="flex-1 px-6 py-3.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg">
+                        Atualizar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-gray-800 text-white px-6 py-4 rounded-xl shadow-2xl z-50 flex items-center gap-3">
+        <i id="toast-icon" class="fas fa-check-circle text-green-400 text-xl"></i>
+        <span id="toast-message" class="font-medium">Operação realizada com sucesso!</span>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="js/config.js"></script>
+    <script src="js/api/images.js"></script>
+    <script src="js/api/google-maps.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/demo-data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/vehicles.js"></script>
+    <script src="js/maintenance.js"></script>
+    <script src="js/providers.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
