@@ -18,3 +18,23 @@ Projeto web estático para gestão de manutenção veicular.
 ## Persistência
 
 Os dados são salvos em `localStorage` no navegador.
+
+## Atualizações rápidas
+
+Com o script `deploy.ps1` na raiz, você pode publicar mudanças com um comando:
+
+- Deploy com mensagem:
+	- `./deploy.ps1 -Message "feat: ajustes no dashboard"`
+- Deploy com mensagem automática (data/hora):
+	- `./deploy.ps1`
+- Deploy em outra branch:
+	- `./deploy.ps1 -Message "release" -Branch "develop"`
+- Deploy + domínio provisório (Cloudflare Tunnel):
+	- `./deploy.ps1 -Message "hotfix" -Tunnel`
+
+Parâmetros disponíveis:
+
+- `-Message` → mensagem do commit
+- `-Branch` → branch de destino (padrão: `main`)
+- `-Tunnel` → inicia `cloudflared tunnel --url ...` ao final
+- `-LocalUrl` → URL local para o túnel (padrão: `http://localhost:5500`)
