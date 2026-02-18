@@ -109,7 +109,9 @@ const Auth = {
 
 		if (email === 'demo@autocare.com' && password === '123456') {
 			this.createSession('Usuário Demo', email);
-			DemoData.init();
+			if (window.DemoData?.init) {
+				window.DemoData.init();
+			}
 		} else {
 			this.createSession(email.split('@')[0], email);
 		}

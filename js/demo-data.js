@@ -1,1 +1,7 @@
-window.DemoData = window.DemoData || {};
+window.DemoData = Object.assign(window.DemoData || {}, {
+	init() {
+		if (typeof window.initializeDemoData === 'function') {
+			window.initializeDemoData();
+		}
+	},
+});
