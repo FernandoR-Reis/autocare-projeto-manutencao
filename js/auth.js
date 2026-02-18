@@ -5,6 +5,7 @@
 const Auth = {
 	elements: {},
 	isInitialized: false,
+	loginDisabled: true,
 
 	init() {
 		if (this.isInitialized) return;
@@ -63,6 +64,14 @@ const Auth = {
 	},
 
 	checkSession() {
+		if (this.loginDisabled) {
+			if (!AppState.currentUser) {
+				this.createSession('Usuário Temporário', 'temporario@autocare.local');
+			}
+			this.showMainApp();
+			return;
+		}
+
 		if (window.AppState?.loadFromStorage && AppState.loadFromStorage() && AppState.currentUser) {
 			this.showMainApp();
 		}
@@ -200,6 +209,11 @@ const Auth = {
 	},
 
 	logout() {
+		if (this.loginDisabled) {
+			UI.showToast('Login temporariamente inativo', 'info');
+			return;
+		}
+
 		if (!confirm('Tem certeza que deseja sair?')) {
 			return;
 		}

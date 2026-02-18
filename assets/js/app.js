@@ -14,6 +14,8 @@ const state = {
     currentFilter: 'all',
 };
 
+const LOGIN_DISABLED = true;
+
 const demoProviders = [
     { id: 1, name: 'Auto Center São Paulo', type: 'mechanic', rating: 4.8, reviews: 127, distance: '2.3 km', address: 'Av. Paulista, 1000', phone: '(11) 99999-1111', partner: true, services: ['Mecânica geral', 'Revisão'] },
     { id: 2, name: 'Mecânica do João', type: 'mechanic', rating: 4.5, reviews: 89, distance: '3.1 km', address: 'Rua Augusta, 500', phone: '(11) 98888-2222', partner: false, services: ['Motor', 'Suspensão'] },
@@ -32,6 +34,20 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateDate, 60000);
     loadSession();
     loadData();
+
+    if (LOGIN_DISABLED) {
+        if (!state.currentUser) {
+            state.currentUser = {
+                id: Date.now(),
+                name: 'Usuário Temporário',
+                email: 'temporario@autocare.local',
+                createdAt: new Date().toISOString(),
+            };
+            saveSession();
+        }
+        showMainApp();
+        return;
+    }
 
     if (state.currentUser) {
         showMainApp();
@@ -149,6 +165,11 @@ function handleForgotPassword(event) {
 }
 
 function logout() {
+    if (LOGIN_DISABLED) {
+        showToast('Login temporariamente inativo', 'info');
+        return;
+    }
+
     state.currentUser = null;
     state.vehicles = [];
     state.maintenances = [];

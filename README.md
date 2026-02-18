@@ -13,7 +13,7 @@ Projeto web estático para gestão de manutenção veicular.
 
 1. Abra a pasta no VS Code.
 2. Abra `index.html` no navegador (ou use extensão Live Server).
-3. Login demo: `demo@autocare.com` / `123456`.
+3. O login está temporariamente desativado para análise de UX/funcionalidades (acesso direto).
 
 ## Persistência
 
