@@ -15,6 +15,12 @@ window.Utils = {
 		return String(value || '').trim().replace(/\s+/g, ' ');
 	},
 
+	isValidEmail(email) {
+		const normalized = String(email || '').trim().toLowerCase();
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+		return emailRegex.test(normalized);
+	},
+
 	isValidPlate(plate) {
 		const normalized = String(plate || '').toUpperCase().trim();
 		const mercosul = /^[A-Z]{3}\d[A-Z]\d{2}$/;
