@@ -58,6 +58,12 @@ window.AppProvidersBridge = {
 };
 
 window.AppState = Object.assign(window.AppState || {}, {
+    get currentUser() {
+        return state.currentUser;
+    },
+    set currentUser(value) {
+        state.currentUser = value || null;
+    },
     get currentSection() {
         return state.currentSection;
     },
@@ -98,6 +104,11 @@ window.AppState = Object.assign(window.AppState || {}, {
     },
     saveToStorage() {
         saveData();
+    },
+    loadFromStorage() {
+        loadSession();
+        loadData();
+        return true;
     },
 });
 
@@ -1656,16 +1667,9 @@ const App = {
         if (this._uiBound) return;
         this._uiBound = true;
 
-        document.getElementById('form-login')?.addEventListener('submit', handleLogin);
-        document.getElementById('form-register')?.addEventListener('submit', handleRegister);
-        document.getElementById('form-forgot')?.addEventListener('submit', handleForgotPassword);
         document.getElementById('form-add-maintenance')?.addEventListener('submit', handleAddMaintenance);
         document.getElementById('form-update-km')?.addEventListener('submit', handleUpdateKm);
 
-        document.getElementById('btn-show-register')?.addEventListener('click', showRegister);
-        document.getElementById('btn-show-login')?.addEventListener('click', showLogin);
-        document.getElementById('btn-forgot-password')?.addEventListener('click', showForgotPassword);
-        document.getElementById('btn-back-login')?.addEventListener('click', showLogin);
         document.getElementById('btn-quick-add-maintenance')?.addEventListener('click', () => openAddMaintenanceModal());
         document.getElementById('btn-add-maintenance')?.addEventListener('click', () => openAddMaintenanceModal());
         document.getElementById('btn-empty-add-maintenance')?.addEventListener('click', () => openAddMaintenanceModal());
@@ -1728,14 +1732,6 @@ const App = {
 
         document.getElementById('btn-header-notif')?.addEventListener('click', () => {
             Navigation.showSection('notifications');
-        });
-
-        document.getElementById('btn-logout')?.addEventListener('click', () => {
-            if (window.Auth?.logout) {
-                window.Auth.logout();
-            } else {
-                logout();
-            }
         });
 
         document.getElementById('alert-days')?.addEventListener('change', () => this.saveAlertSettings());
