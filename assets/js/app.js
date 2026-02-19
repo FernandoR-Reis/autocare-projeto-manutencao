@@ -14,7 +14,7 @@ const state = {
     currentFilter: 'all',
 };
 
-const LOGIN_DISABLED = true;
+const LOGIN_DISABLED = window.CONSTANTS?.AUTH_DISABLED ?? true;
 
 const demoProviders = [
     { id: 1, name: 'Auto Center São Paulo', type: 'mechanic', rating: 4.8, reviews: 127, distance: '2.3 km', address: 'Av. Paulista, 1000', phone: '(11) 99999-1111', partner: true, services: ['Mecânica geral', 'Revisão'] },
@@ -24,6 +24,58 @@ const demoProviders = [
     { id: 5, name: 'Funilaria Premium', type: 'body', rating: 4.7, reviews: 78, distance: '5.2 km', address: 'Rua Oscar Freire, 300', phone: '(11) 95555-5555', partner: true, services: ['Funilaria', 'Pintura'] },
     { id: 6, name: 'Estética Shine', type: 'detailing', rating: 4.6, reviews: 45, distance: '3.8 km', address: 'Alameda Santos, 900', phone: '(11) 94444-6666', partner: false, services: ['Polimento', 'Higienização'] },
 ];
+
+function getStore() {
+    if (window.store && typeof window.store.getState === 'function') {
+        return window.store;
+    }
+    return null;
+}
+
+function syncStateFromStore() {
+    const store = getStore();
+    if (!store) return;
+
+    const storeState = store.getState();
+
+    if (storeState.user) {
+        state.currentUser = storeState.user;
+    }
+    if (Array.isArray(storeState.vehicles)) {
+        state.vehicles = storeState.vehicles;
+    }
+    if (Array.isArray(storeState.maintenances)) {
+        state.maintenances = storeState.maintenances;
+    }
+    if (Array.isArray(storeState.notifications)) {
+        state.notifications = storeState.notifications;
+    }
+    if (storeState.settings) {
+        state.alertSettings = {
+            ...state.alertSettings,
+            days: storeState.settings.alertDays,
+            km: storeState.settings.alertKm,
+            email: storeState.settings.emailNotifications,
+        };
+    }
+}
+
+function syncStoreFromState() {
+    const store = getStore();
+    if (!store || typeof store.setState !== 'function') return;
+
+    store.setState({
+        user: state.currentUser,
+        vehicles: state.vehicles,
+        maintenances: state.maintenances,
+        notifications: state.notifications,
+        settings: {
+            alertDays: Number(state.alertSettings.days),
+            alertKm: Number(state.alertSettings.km),
+            emailNotifications: Boolean(state.alertSettings.email),
+        },
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     if (window.Config?.init) {
@@ -174,6 +226,11 @@ function logout() {
     state.vehicles = [];
     state.maintenances = [];
     state.notifications = [];
+
+    const store = getStore();
+    if (store && typeof store.reset === 'function') {
+        store.reset();
+    }
 
     localStorage.removeItem('currentUser');
     localStorage.removeItem('vehicles');
@@ -509,7 +566,14 @@ function handleAddVehicle(event) {
         updatedAt: new Date().toISOString(),
     };
 
-    state.vehicles.push(vehicle);
+    const store = getStore();
+    if (store && typeof store.addVehicle === 'function') {
+        store.addVehicle(vehicle);
+        syncStateFromStore();
+    } else {
+        state.vehicles.push(vehicle);
+    }
+
     saveData();
     closeModal('modal-vehicle');
     updateUI();
@@ -521,8 +585,15 @@ function handleAddVehicle(event) {
 function deleteVehicle(id) {
     if (!confirm('Tem certeza que deseja excluir este veículo? Todas as manutenções associadas também serão removidas.')) return;
 
-    state.vehicles = state.vehicles.filter((vehicle) => vehicle.id !== id);
-    state.maintenances = state.maintenances.filter((maintenance) => maintenance.vehicleId !== id);
+    const store = getStore();
+    if (store && typeof store.removeVehicle === 'function') {
+        store.removeVehicle(id);
+        syncStateFromStore();
+    } else {
+        state.vehicles = state.vehicles.filter((vehicle) => vehicle.id !== id);
+        state.maintenances = state.maintenances.filter((maintenance) => maintenance.vehicleId !== id);
+    }
+
     saveData();
     updateUI();
     showToast('Veículo removido com sucesso!', 'success');
@@ -556,13 +627,24 @@ function handleUpdateKm(event) {
     }
 
     if (!vehicle.kmHistory) vehicle.kmHistory = [];
-    vehicle.kmHistory.push({
+    const kmHistory = [...vehicle.kmHistory, {
         km: vehicle.km,
         date: new Date().toISOString(),
-    });
+    }];
 
-    vehicle.km = newKm;
-    vehicle.updatedAt = new Date().toISOString();
+    const store = getStore();
+    if (store && typeof store.updateVehicle === 'function') {
+        store.updateVehicle(vehicleId, {
+            km: newKm,
+            updatedAt: new Date().toISOString(),
+            kmHistory,
+        });
+        syncStateFromStore();
+    } else {
+        vehicle.km = newKm;
+        vehicle.updatedAt = new Date().toISOString();
+        vehicle.kmHistory = kmHistory;
+    }
 
     saveData();
     checkMaintenanceStatus();
@@ -794,7 +876,14 @@ function handleAddMaintenance(event) {
         maintenance.nextDate = nextDate.toISOString().split('T')[0];
     }
 
-    state.maintenances.push(maintenance);
+    const store = getStore();
+    if (store && typeof store.addMaintenance === 'function') {
+        store.addMaintenance(maintenance);
+        syncStateFromStore();
+    } else {
+        state.maintenances.push(maintenance);
+    }
+
     checkMaintenanceStatus();
     saveData();
     closeModal('modal-maintenance');
@@ -824,8 +913,14 @@ function markMaintenanceDone(id) {
         newMaintenance.nextDate = nextDate.toISOString().split('T')[0];
     }
 
-    const index = state.maintenances.findIndex((item) => item.id === id);
-    state.maintenances[index] = newMaintenance;
+    const store = getStore();
+    if (store && typeof store.updateMaintenance === 'function') {
+        store.updateMaintenance(id, newMaintenance);
+        syncStateFromStore();
+    } else {
+        const index = state.maintenances.findIndex((item) => item.id === id);
+        state.maintenances[index] = newMaintenance;
+    }
 
     checkMaintenanceStatus();
     saveData();
@@ -840,7 +935,14 @@ function editMaintenance() {
 function deleteMaintenance(id) {
     if (!confirm('Tem certeza que deseja excluir esta manutenção?')) return;
 
-    state.maintenances = state.maintenances.filter((maintenance) => maintenance.id !== id);
+    const store = getStore();
+    if (store && typeof store.removeMaintenance === 'function') {
+        store.removeMaintenance(id);
+        syncStateFromStore();
+    } else {
+        state.maintenances = state.maintenances.filter((maintenance) => maintenance.id !== id);
+    }
+
     saveData();
     updateUI();
     showToast('Manutenção removida com sucesso!', 'success');
@@ -894,6 +996,11 @@ function checkMaintenanceStatus() {
     });
 
     if (hasChanges) {
+        const store = getStore();
+        if (store && typeof store.setState === 'function') {
+            store.setState({ maintenances: state.maintenances });
+            syncStateFromStore();
+        }
         saveData();
     }
 }
@@ -1111,10 +1218,16 @@ function addNotification(type, title, message, relatedId = null) {
         createdAt: new Date().toISOString(),
     };
 
-    state.notifications.unshift(notification);
+    const store = getStore();
+    if (store && typeof store.addNotification === 'function') {
+        store.addNotification(notification);
+        syncStateFromStore();
+    } else {
+        state.notifications.unshift(notification);
 
-    if (state.notifications.length > 50) {
-        state.notifications = state.notifications.slice(0, 50);
+        if (state.notifications.length > 50) {
+            state.notifications = state.notifications.slice(0, 50);
+        }
     }
 
     updateNotificationBadge();
@@ -1165,6 +1278,15 @@ function renderNotifications() {
 }
 
 function markAsRead(id) {
+    const store = getStore();
+    if (store && typeof store.markNotificationAsRead === 'function') {
+        store.markNotificationAsRead(id);
+        syncStateFromStore();
+        updateNotificationBadge();
+        renderNotifications();
+        return;
+    }
+
     const notification = state.notifications.find((item) => item.id === id);
     if (notification) {
         notification.read = true;
@@ -1174,9 +1296,16 @@ function markAsRead(id) {
 }
 
 function markAllAsRead() {
-    state.notifications.forEach((notification) => {
-        notification.read = true;
-    });
+    const store = getStore();
+    if (store && typeof store.markAllNotificationsAsRead === 'function') {
+        store.markAllNotificationsAsRead();
+        syncStateFromStore();
+    } else {
+        state.notifications.forEach((notification) => {
+            notification.read = true;
+        });
+    }
+
     updateNotificationBadge();
     renderNotifications();
     showToast('Todas as notificações marcadas como lidas!', 'success');
@@ -1206,7 +1335,16 @@ function saveAlertSettings() {
         email: document.getElementById('email-notifications').checked,
     };
 
-    localStorage.setItem('alertSettings', JSON.stringify(state.alertSettings));
+    const store = getStore();
+    if (store && typeof store.updateSettings === 'function') {
+        store.updateSettings({
+            alertDays: Number(state.alertSettings.days),
+            alertKm: Number(state.alertSettings.km),
+            emailNotifications: Boolean(state.alertSettings.email),
+        });
+        syncStateFromStore();
+    }
+
     checkMaintenanceStatus();
     showToast('Configurações de alerta salvas!', 'success');
 }
@@ -1301,48 +1439,41 @@ function initializeDemoData() {
     state.maintenances = maintenanceList;
     state.providers = demoProviders;
 
+    syncStoreFromState();
+
     checkMaintenanceStatus();
     saveData();
 }
 
 function saveSession() {
-    localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+    const store = getStore();
+    if (store && typeof store.setUser === 'function') {
+        store.setUser(state.currentUser);
+        syncStateFromStore();
+    }
 }
 
 function loadSession() {
-    const rawUser = localStorage.getItem('currentUser');
-    if (!rawUser) return;
-
-    try {
-        state.currentUser = JSON.parse(rawUser);
-    } catch (error) {
-        localStorage.removeItem('currentUser');
+    const store = getStore();
+    if (store && typeof store.getUser === 'function') {
+        const storeUser = store.getUser();
+        if (storeUser) {
+            state.currentUser = storeUser;
+        }
     }
 }
 
 function saveData() {
-    localStorage.setItem('vehicles', JSON.stringify(state.vehicles));
-    localStorage.setItem('maintenances', JSON.stringify(state.maintenances));
-    localStorage.setItem('notifications', JSON.stringify(state.notifications));
+    syncStoreFromState();
+
     localStorage.setItem('providers', JSON.stringify(state.providers));
 }
 
 function loadData() {
     try {
-        const vehicles = localStorage.getItem('vehicles');
-        const maintenances = localStorage.getItem('maintenances');
-        const notifications = localStorage.getItem('notifications');
+        syncStateFromStore();
         const providers = localStorage.getItem('providers');
-        const alertSettings = localStorage.getItem('alertSettings');
-
-        state.vehicles = vehicles ? JSON.parse(vehicles) : [];
-        state.maintenances = maintenances ? JSON.parse(maintenances) : [];
-        state.notifications = notifications ? JSON.parse(notifications) : [];
         state.providers = providers ? JSON.parse(providers) : demoProviders;
-
-        if (alertSettings) {
-            state.alertSettings = { ...state.alertSettings, ...JSON.parse(alertSettings) };
-        }
 
         const alertDays = document.getElementById('alert-days');
         const alertKm = document.getElementById('alert-km');
@@ -1352,9 +1483,7 @@ function loadData() {
         if (alertKm) alertKm.value = String(state.alertSettings.km);
         if (emailNotifications) emailNotifications.checked = Boolean(state.alertSettings.email);
     } catch (error) {
-        state.vehicles = [];
-        state.maintenances = [];
-        state.notifications = [];
+        syncStateFromStore();
         state.providers = demoProviders;
     }
 }

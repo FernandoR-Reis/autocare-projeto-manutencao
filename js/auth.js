@@ -5,7 +5,7 @@
 const Auth = {
 	elements: {},
 	isInitialized: false,
-	loginDisabled: true,
+	loginDisabled: window.CONSTANTS?.AUTH_DISABLED ?? true,
 
 	init() {
 		if (this.isInitialized) return;
