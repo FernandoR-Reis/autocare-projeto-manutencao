@@ -2,6 +2,11 @@
 
 Projeto web estático para gestão de manutenção veicular.
 
+## Produção
+
+- URL pública: https://fernandor-reis.github.io/autocare-projeto-manutencao/
+- Link direto: https://fernandor-reis.github.io/autocare-projeto-manutencao/index.html
+
 ## Estrutura
 
 - `index.html` → estrutura das telas e componentes
