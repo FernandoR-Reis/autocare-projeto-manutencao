@@ -2289,10 +2289,14 @@ const Navigation = {
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebarToggleIcon = document.getElementById('sidebar-toggle-icon');
+        const mainApp = document.getElementById('main-app');
 
         if (sidebar && sidebarToggle) {
+            mainApp?.classList.toggle('sidebar-expanded', sidebar.classList.contains('expanded'));
+
             sidebarToggle.addEventListener('click', () => {
                 const isExpanded = sidebar.classList.toggle('expanded');
+                mainApp?.classList.toggle('sidebar-expanded', isExpanded);
                 sidebarToggle.setAttribute('aria-expanded', String(isExpanded));
 
                 if (sidebarToggleIcon) {

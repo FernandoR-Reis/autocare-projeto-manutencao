@@ -236,13 +236,17 @@
         }
         
         /* Conteúdo principal ajustado */
-        .main-content {
-            margin-left: 72px;
-            transition: margin-left 0.3s ease;
+        #main-app {
+            --sidebar-offset: 72px;
         }
 
-        .sidebar.expanded ~ .main-content {
-            margin-left: 260px;
+        #main-app.sidebar-expanded {
+            --sidebar-offset: 260px;
+        }
+
+        #main-app .main-content {
+            margin-left: var(--sidebar-offset);
+            transition: margin-left 0.3s ease;
         }
 
         .sidebar:not(.expanded) .sidebar-logo .flex > div:last-child,
@@ -281,7 +285,7 @@
         }
 
         @media (max-width: 1023px) {
-            .main-content {
+            #main-app .main-content {
                 margin-left: 0;
             }
         }
