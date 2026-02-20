@@ -2292,10 +2292,10 @@ const Navigation = {
         const mainApp = document.getElementById('main-app');
 
         if (sidebar && sidebarToggle) {
-            mainApp?.classList.toggle('sidebar-expanded', sidebar.classList.contains('expanded'));
+            let sidebarPinned = sidebar.classList.contains('expanded');
 
-            sidebarToggle.addEventListener('click', () => {
-                const isExpanded = sidebar.classList.toggle('expanded');
+            const setSidebarExpanded = (isExpanded) => {
+                sidebar.classList.toggle('expanded', isExpanded);
                 mainApp?.classList.toggle('sidebar-expanded', isExpanded);
                 sidebarToggle.setAttribute('aria-expanded', String(isExpanded));
 
@@ -2303,6 +2303,23 @@ const Navigation = {
                     sidebarToggleIcon.classList.toggle('fa-chevron-right', !isExpanded);
                     sidebarToggleIcon.classList.toggle('fa-chevron-left', isExpanded);
                 }
+            };
+
+            setSidebarExpanded(sidebarPinned);
+
+            sidebar.addEventListener('mouseenter', () => {
+                if (window.innerWidth < 1024) return;
+                setSidebarExpanded(true);
+            });
+
+            sidebar.addEventListener('mouseleave', () => {
+                if (window.innerWidth < 1024) return;
+                if (!sidebarPinned) setSidebarExpanded(false);
+            });
+
+            sidebarToggle.addEventListener('click', () => {
+                sidebarPinned = !sidebarPinned;
+                setSidebarExpanded(sidebarPinned);
             });
         }
 
