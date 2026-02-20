@@ -110,24 +110,6 @@
             overflow-x: hidden;
         }
 
-        .sidebar-toggle {
-            position: absolute;
-            right: -12px;
-            top: 24px;
-            width: 24px;
-            height: 24px;
-            background: var(--color-accent, #3b82f6);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            z-index: 51;
-            color: #ffffff;
-            border: none;
-        }
-        
         /* Botões da sidebar - CORRIGIDO: fundo escuro visível */
         .sidebar-btn {
             display: flex;
@@ -1379,9 +1361,6 @@
 
             <!-- SIDEBAR COLAPSÁVEL -->
             <div class="sidebar hidden lg:block" id="sidebar">
-                <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Alternar sidebar" aria-expanded="false">
-                    <i id="sidebar-toggle-icon" class="fas fa-chevron-right text-xs"></i>
-                </button>
                 <div class="sidebar-content">
                     <!-- Logo -->
                     <div class="sidebar-logo">

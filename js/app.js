@@ -2287,25 +2287,15 @@ const Navigation = {
         this._bound = true;
 
         const sidebar = document.getElementById('sidebar');
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        const sidebarToggleIcon = document.getElementById('sidebar-toggle-icon');
         const mainApp = document.getElementById('main-app');
 
-        if (sidebar && sidebarToggle) {
-            let sidebarPinned = sidebar.classList.contains('expanded');
-
+        if (sidebar) {
             const setSidebarExpanded = (isExpanded) => {
                 sidebar.classList.toggle('expanded', isExpanded);
                 mainApp?.classList.toggle('sidebar-expanded', isExpanded);
-                sidebarToggle.setAttribute('aria-expanded', String(isExpanded));
-
-                if (sidebarToggleIcon) {
-                    sidebarToggleIcon.classList.toggle('fa-chevron-right', !isExpanded);
-                    sidebarToggleIcon.classList.toggle('fa-chevron-left', isExpanded);
-                }
             };
 
-            setSidebarExpanded(sidebarPinned);
+            setSidebarExpanded(false);
 
             sidebar.addEventListener('mouseenter', () => {
                 if (window.innerWidth < 1024) return;
@@ -2314,12 +2304,7 @@ const Navigation = {
 
             sidebar.addEventListener('mouseleave', () => {
                 if (window.innerWidth < 1024) return;
-                if (!sidebarPinned) setSidebarExpanded(false);
-            });
-
-            sidebarToggle.addEventListener('click', () => {
-                sidebarPinned = !sidebarPinned;
-                setSidebarExpanded(sidebarPinned);
+                setSidebarExpanded(false);
             });
         }
 
