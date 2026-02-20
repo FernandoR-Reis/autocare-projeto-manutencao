@@ -5,9 +5,9 @@ Projeto web estático para gestão de manutenção veicular.
 ## Estrutura
 
 - `index.html` → estrutura das telas e componentes
-- `assets/css/styles.css` → estilos customizados
-- `assets/js/tailwind-config.js` → configuração do Tailwind CDN
-- `assets/js/app.js` → regras de negócio, estado e renderização
+- `js/app.js` → orquestração da aplicação e fluxos de UI
+- `js/store.js` → estado centralizado (store com mutations/commit)
+- `js/api/images.js` e `js/api/google-maps.js` → integrações externas
 
 ## Como executar
 

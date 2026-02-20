@@ -83,52 +83,47 @@
         .animate-spin { animation: spin 1s linear infinite; }
         .animate-pulse { animation: pulse 2s ease-in-out infinite; }
         
-        /* NOVO: Sidebar oculta com hover */
-        .sidebar-container {
+        /* Sidebar sempre visível e colapsável */
+        .sidebar {
             position: fixed;
             left: 0;
             top: 0;
             bottom: 0;
             z-index: 50;
-            width: 20px;
+            width: 72px;
             transition: width 0.3s ease;
             overflow: hidden;
         }
-        
-        .sidebar-container:hover {
-            width: 280px;
+
+        .sidebar.expanded {
+            width: 260px;
         }
-        
+
         .sidebar-content {
-            width: 280px;
+            width: 260px;
             height: 100%;
             background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
             color: white;
-            opacity: 0;
-            transition: opacity 0.2s ease 0.1s;
             display: flex;
             flex-direction: column;
         }
-        
-        .sidebar-container:hover .sidebar-content {
-            opacity: 1;
-        }
-        
-        /* Indicador visual de que há sidebar */
-        .sidebar-indicator {
+
+        .sidebar-toggle {
             position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 4px;
-            height: 60px;
-            background: #3b82f6;
-            border-radius: 0 4px 4px 0;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar-container:hover .sidebar-indicator {
-            opacity: 0;
+            right: -12px;
+            top: 24px;
+            width: 24px;
+            height: 24px;
+            background: var(--color-accent, #3b82f6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 51;
+            color: #ffffff;
+            border: none;
         }
         
         /* Botões da sidebar - CORRIGIDO: fundo escuro visível */
@@ -242,8 +237,53 @@
         
         /* Conteúdo principal ajustado */
         .main-content {
-            margin-left: 20px;
+            margin-left: 72px;
             transition: margin-left 0.3s ease;
+        }
+
+        .sidebar.expanded ~ .main-content {
+            margin-left: 260px;
+        }
+
+        .sidebar:not(.expanded) .sidebar-logo .flex > div:last-child,
+        .sidebar:not(.expanded) .sidebar-btn span,
+        .sidebar:not(.expanded) .sidebar-footer .flex-1,
+        .sidebar:not(.expanded) #btn-logout span {
+            display: none;
+        }
+
+        .sidebar:not(.expanded) .sidebar-btn {
+            justify-content: center;
+            padding: 12px 0;
+            margin: 4px 10px;
+        }
+
+        .sidebar:not(.expanded) .sidebar-btn i {
+            width: auto;
+        }
+
+        .sidebar:not(.expanded) .sidebar-logo {
+            padding: 24px 12px;
+        }
+
+        .sidebar:not(.expanded) .sidebar-logo .flex {
+            justify-content: center;
+        }
+
+        .sidebar:not(.expanded) .sidebar-footer {
+            padding: 20px 12px;
+        }
+
+        .sidebar:not(.expanded) #btn-logout {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        @media (max-width: 1023px) {
+            .main-content {
+                margin-left: 0;
+            }
         }
         
         /* Glassmorphism */
@@ -261,6 +301,743 @@
         .card-hover:hover {
             transform: translateY(-4px);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Onboarding progressivo */
+        .onboarding-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        .onboarding-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .progress-ring {
+            position: relative;
+            width: 64px;
+            height: 64px;
+            flex-shrink: 0;
+        }
+
+        .progress-ring svg {
+            width: 64px;
+            height: 64px;
+            transform: rotate(-90deg);
+        }
+
+        .progress-bg {
+            fill: none;
+            stroke: #e2e8f0;
+            stroke-width: 3.8;
+        }
+
+        .progress-fill {
+            fill: none;
+            stroke: #3b82f6;
+            stroke-width: 3.8;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.3s ease;
+        }
+
+        .progress-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            background: #ffffff;
+        }
+
+        .step.done {
+            border-color: #86efac;
+            background: #f0fdf4;
+        }
+
+        .step.locked {
+            opacity: 0.65;
+            background: #f8fafc;
+        }
+
+        .step-icon {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 0.625rem;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .step-content h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .step-content p {
+            margin: 0.2rem 0 0;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .step-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            border: none;
+            border-radius: 0.6rem;
+            padding: 0.45rem 0.7rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sm-primary {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .btn-sm-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-sm-ghost {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .btn-sm-ghost:hover {
+            background: #cbd5e1;
+        }
+
+        .step-status {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #16a34a;
+        }
+
+        /* Cards de manutenção com urgência visual */
+        .maintenance-card {
+            position: relative;
+            border-radius: 16px;
+            padding: 20px;
+            background: #ffffff;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .maintenance-card.critical {
+            border-color: var(--color-danger, #ef4444);
+            background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+            animation: pulse-border 2s infinite;
+        }
+
+        .maintenance-card.critical::before {
+            content: '⚠️ URGENTE';
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: var(--color-danger, #ef4444);
+            color: #ffffff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .maintenance-card.warning {
+            border-left: 4px solid var(--color-warning, #f59e0b);
+            background: #fffbeb;
+        }
+
+        .maintenance-card.ok {
+            border-left: 4px solid var(--color-success, #10b981);
+            opacity: 0.8;
+        }
+
+        .maintenance-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .maintenance-timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom,
+                var(--color-danger, #ef4444) 0%,
+                var(--color-warning, #f59e0b) 50%,
+                var(--color-success, #10b981) 100%);
+        }
+
+        .view-toggle {
+            display: flex;
+            background: var(--color-gray-100, #f1f5f9);
+            padding: 4px;
+            border-radius: 12px;
+            width: fit-content;
+            border: 1px solid var(--color-gray-200, #e2e8f0);
+        }
+
+        .view-toggle button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .view-toggle button.active {
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: #0f172a;
+        }
+
+        .garage-view {
+            display: grid;
+            gap: 24px;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+
+        @media (min-width: 768px) {
+            .garage-view {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .garage-view {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .garage-view .vehicle-card {
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            border: 1px solid var(--color-gray-200, #e2e8f0);
+        }
+
+        .garage-view .vehicle-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 16px;
+        }
+
+        .list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .list-view .vehicle-card {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 16px;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+        }
+
+        .list-view .vehicle-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+        }
+
+        .list-view .health-score,
+        .list-view .upcoming-mini,
+        .list-view .grid.grid-cols-2 {
+            display: none;
+        }
+
+        .list-view .vehicle-header {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .list-view .vehicle-photo {
+            width: 60px;
+            height: 60px;
+            margin-right: 8px;
+        }
+
+        .list-view .vehicle-info h3 {
+            font-size: 0.95rem;
+        }
+
+        .list-view .quick-actions {
+            margin-top: 0;
+            margin-left: auto;
+        }
+
+        .list-view .list-row-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 8px;
+        }
+
+        .list-view .quick-actions .action-btn {
+            padding: 8px 10px;
+            font-size: 11px;
+            min-width: 96px;
+        }
+
+        .list-view .mt-3.pt-3 {
+            display: none;
+        }
+
+        .mobile-sheet-trigger {
+            display: none;
+        }
+
+        .bottom-sheet {
+            position: fixed;
+            inset: 0;
+            z-index: 70;
+            background: rgba(15, 23, 42, 0.4);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .bottom-sheet.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .sheet-content {
+            width: 100%;
+            max-width: 560px;
+            background: #ffffff;
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+            box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.18);
+            padding: 12px 16px 18px;
+            transform: translateY(100%);
+            transition: transform 0.25s ease;
+            touch-action: none;
+        }
+
+        .bottom-sheet.show .sheet-content {
+            transform: translateY(0);
+        }
+
+        .sheet-handle {
+            width: 42px;
+            height: 5px;
+            background: #cbd5e1;
+            border-radius: 999px;
+            margin: 4px auto 10px;
+        }
+
+        .sheet-content h3 {
+            margin: 0 0 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .sheet-action,
+        .sheet-cancel {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sheet-action {
+            background: #f8fafc;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .sheet-action.primary {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+        }
+
+        .sheet-action.danger {
+            color: #b91c1c;
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .sheet-cancel {
+            justify-content: center;
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .delete-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .delete-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .delete-item span {
+            font-size: 1.1rem;
+        }
+
+        .delete-item strong {
+            display: block;
+            color: #0f172a;
+            font-size: 0.95rem;
+        }
+
+        .delete-item small {
+            color: #64748b;
+            font-size: 0.75rem;
+        }
+
+        .delete-impact {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .impact-badge {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .delete-actions {
+            margin-top: 16px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-weight: 700;
+            flex: 1;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        @media (max-width: 767px) {
+            .mobile-sheet-trigger {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                border-radius: 10px;
+                border: 1px solid #e2e8f0;
+                background: #ffffff;
+                color: #334155;
+            }
+
+            .vehicle-card .quick-actions,
+            .vehicle-card .list-row-actions,
+            .vehicle-card .mt-3.pt-3 {
+                display: none !important;
+            }
+        }
+
+        .vehicle-health-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .vehicle-health-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.12);
+        }
+
+        .vehicle-header {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .vehicle-photo {
+            position: relative;
+            width: 132px;
+            height: 96px;
+            flex-shrink: 0;
+            border-radius: 14px;
+            overflow: visible;
+        }
+
+        .vehicle-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .vehicle-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        .vehicle-info h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.25;
+        }
+
+        .vehicle-info .plate,
+        .vehicle-info .km {
+            font-size: 0.82rem;
+            color: #64748b;
+        }
+
+        .health-score {
+            position: absolute;
+            bottom: -12px;
+            right: -12px;
+            width: 52px;
+            height: 52px;
+            background: #ffffff;
+            border-radius: 9999px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.15);
+        }
+
+        .score-ring {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: #e2e8f0;
+            stroke-width: 3;
+        }
+
+        .ring-fill {
+            fill: none;
+            stroke: #10b981;
+            stroke-width: 3;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.8s ease, stroke 0.3s ease;
+            animation: fillRing 0.8s ease;
+        }
+
+        .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 13px;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .upcoming-mini {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .mini-item {
+            display: grid;
+            grid-template-columns: 24px 1fr auto;
+            gap: 10px;
+            align-items: center;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 8px 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .mini-item.urgent {
+            background: #fff1f2;
+            border-color: #fecdd3;
+        }
+
+        .mini-item.warning {
+            background: #fffbeb;
+            border-color: #fde68a;
+        }
+
+        .mini-item.ok {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .mini-icon {
+            font-size: 15px;
+            text-align: center;
+        }
+
+        .mini-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .mini-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mini-when {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .mini-bar {
+            width: 64px;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .mini-progress {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        .action-btn {
+            flex: 1;
+            border: none;
+            border-radius: 10px;
+            padding: 9px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            background: #2563eb;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .action-btn.secondary {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #e2e8f0;
+        }
+
+        .action-btn.secondary:hover {
+            background: #e2e8f0;
+        }
+
+        @keyframes fillRing {
+            from { stroke-dasharray: 0, 100; }
+        }
+
+        @keyframes pulse-border {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.18);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+            }
         }
         
         /* Scrollbar customizada */
@@ -292,6 +1069,88 @@
         #toast.show {
             transform: translateY(0);
             opacity: 1;
+        }
+
+        #pull-refresh-indicator {
+            position: fixed;
+            top: 12px;
+            left: 50%;
+            transform: translate(-50%, -18px);
+            background: rgba(15, 23, 42, 0.92);
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 80;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        #pull-refresh-indicator.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+
+        #pull-refresh-indicator .refresh-spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .focus-mode .sidebar,
+        .focus-mode .header-actions,
+        .focus-mode .notifications {
+            opacity: 0.3;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .focus-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-accent, #3b82f6);
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideDown 0.3s;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.2);
+        }
+
+        #focus-mobile-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.18);
+            backdrop-filter: blur(1.5px);
+            z-index: 45;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        @media (max-width: 1023px) {
+            .focus-mode #focus-mobile-overlay {
+                display: block;
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(-100%); }
+            to { transform: translateX(-50%) translateY(0); }
         }
         
         /* Modais */
@@ -512,9 +1371,11 @@
                 </button>
             </div>
 
-            <!-- SIDEBAR OCULTA COM HOVER -->
-            <div class="sidebar-container hidden lg:block" id="sidebar">
-                <div class="sidebar-indicator"></div>
+            <!-- SIDEBAR COLAPSÁVEL -->
+            <div class="sidebar hidden lg:block" id="sidebar">
+                <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Alternar sidebar" aria-expanded="false">
+                    <i id="sidebar-toggle-icon" class="fas fa-chevron-right text-xs"></i>
+                </button>
                 <div class="sidebar-content">
                     <!-- Logo -->
                     <div class="sidebar-logo">
@@ -624,8 +1485,8 @@
                         <h2 id="page-title" class="text-2xl font-bold text-gray-800">Dashboard</h2>
                         <p id="current-date" class="text-sm text-gray-500 mt-1"></p>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <button id="btn-header-notif" class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors rounded-xl hover:bg-blue-50">
+                    <div class="header-actions flex items-center gap-4">
+                        <button id="btn-header-notif" class="notifications relative p-2 text-gray-600 hover:text-blue-600 transition-colors rounded-xl hover:bg-blue-50">
                             <i class="fas fa-bell text-xl"></i>
                             <span id="header-badge" class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full hidden animate-pulse"></span>
                         </button>
@@ -683,6 +1544,8 @@
                                 <p class="text-sm text-gray-500 mt-1">Veículos cadastrados</p>
                             </div>
                         </div>
+
+                        <div id="dashboard-onboarding" class="hidden"></div>
 
                         <!-- Quick Actions & Next Maintenance -->
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -763,6 +1626,10 @@
                                     <option value="active">Ativos</option>
                                     <option value="maintenance">Em manutenção</option>
                                 </select>
+                                <div class="view-toggle" role="group" aria-label="Alternar visualização dos veículos">
+                                    <button id="vehicles-view-garage" type="button" class="active">Garagem</button>
+                                    <button id="vehicles-view-list" type="button">Lista</button>
+                                </div>
                             </div>
                             <button id="btn-add-vehicle" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-blue-600/30 font-semibold">
                                 <i class="fas fa-plus"></i>
@@ -793,7 +1660,10 @@
                                 <button data-filter="all" class="filter-btn px-5 py-2 rounded-lg text-sm font-semibold bg-blue-100 text-blue-700 transition-all">Todas</button>
                                 <button data-filter="ok" class="filter-btn px-5 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all">Em dia</button>
                                 <button data-filter="warning" class="filter-btn px-5 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all">Próximas</button>
-                                <button data-filter="overdue" class="filter-btn px-5 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all">Vencidas</button>
+                                <button data-filter="overdue" class="filter-btn px-5 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all">
+                                    Vencidas
+                                    <span id="filter-overdue-count" class="hidden ml-2 px-2 py-0.5 rounded-full bg-red-500 text-white text-xs font-bold">0</span>
+                                </button>
                             </div>
                             <button id="btn-add-maintenance" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-blue-600/30 font-semibold">
                                 <i class="fas fa-plus"></i>
@@ -877,7 +1747,7 @@
                     </div>
 
                     <!-- NOTIFICATIONS SECTION -->
-                    <div id="section-notifications" class="hidden space-y-6 animate-fade-in">
+                    <div id="section-notifications" class="notifications hidden space-y-6 animate-fade-in">
                         <div class="bg-white rounded-2xl shadow-sm border-2 border-gray-100 overflow-hidden">
                             <div class="p-6 border-b-2 border-gray-100 flex items-center justify-between">
                                 <h3 class="font-bold text-xl text-gray-800 flex items-center gap-2">
@@ -942,6 +1812,28 @@
                                         <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
                                     </label>
                                 </div>
+
+                                <div class="flex items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-200">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Som de sucesso</p>
+                                        <p class="text-sm text-gray-500">Tocar som curto ao concluir ações importantes</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="sound-feedback" class="sr-only peer" checked>
+                                        <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+
+                                <div class="flex items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-200">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Vibração tátil</p>
+                                        <p class="text-sm text-gray-500">Ativar feedback por vibração no celular</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="haptic-feedback" class="sr-only peer" checked>
+                                        <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -977,6 +1869,18 @@
                             class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                             placeholder="Ex: Meu Carro, Carro da Família">
                     </div>
+
+                    <div class="col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Busca Inteligente</label>
+                        <div class="relative">
+                            <input type="text" id="vehicle-smart-search"
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                placeholder="Digite marca, modelo ou placa..."
+                                autocomplete="off">
+                            <i class="fas fa-search absolute right-4 top-4 text-gray-400 pointer-events-none"></i>
+                        </div>
+                        <div id="vehicle-smart-suggestions" class="hidden mt-2 border border-gray-200 rounded-xl overflow-hidden bg-white"></div>
+                    </div>
                     
                     <!-- NOVO: Select de marca com logo -->
                     <div class="col-span-2">
@@ -1002,8 +1906,10 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Modelo *</label>
                         <input type="text" id="vehicle-model" required 
+                            list="vehicle-model-list"
                             class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                             placeholder="Ex: Onix, Gol, Civic">
+                        <datalist id="vehicle-model-list"></datalist>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Ano *</label>
@@ -1054,6 +1960,105 @@
                         class="flex-1 px-6 py-3.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
                         <i class="fas fa-check"></i>
                         Salvar Veículo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Vehicle Modal -->
+    <div id="modal-edit-vehicle" class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-slide-up shadow-2xl">
+            <div class="p-6 border-b-2 border-gray-100 flex items-center justify-between sticky top-0 bg-white rounded-t-2xl z-10">
+                <h3 class="text-xl font-bold text-gray-800">Editar Veículo</h3>
+                <button class="btn-close-modal w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors" data-modal="modal-edit-vehicle">
+                    <i class="fas fa-times text-gray-500 text-lg"></i>
+                </button>
+            </div>
+            <form id="form-edit-vehicle" class="p-6 space-y-5">
+                <input type="hidden" id="edit-vehicle-id">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Apelido do Veículo (opcional)</label>
+                        <input type="text" id="edit-vehicle-nickname"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                            placeholder="Ex: Meu Carro, Carro da Família">
+                    </div>
+
+                    <div class="col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Marca *</label>
+                        <div class="relative">
+                            <select id="edit-vehicle-brand" required
+                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white appearance-none cursor-pointer">
+                                <option value="">Selecione a marca...</option>
+                                <option value="Chevrolet">🚗 Chevrolet</option>
+                                <option value="Fiat">🚗 Fiat</option>
+                                <option value="Ford">🚗 Ford</option>
+                                <option value="Honda">🚗 Honda</option>
+                                <option value="Hyundai">🚗 Hyundai</option>
+                                <option value="Renault">🚗 Renault</option>
+                                <option value="Toyota">🚗 Toyota</option>
+                                <option value="Volkswagen">🚗 Volkswagen</option>
+                                <option value="Outro">🚗 Outra marca</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-4 top-4 text-gray-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Modelo *</label>
+                        <input type="text" id="edit-vehicle-model" required list="edit-vehicle-model-list"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                            placeholder="Ex: Onix, Gol, Civic">
+                        <datalist id="edit-vehicle-model-list"></datalist>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Ano *</label>
+                        <input type="number" id="edit-vehicle-year" required min="1900" max="2030"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                            placeholder="2023">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Placa *</label>
+                        <input type="text" id="edit-vehicle-plate" required
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all uppercase"
+                            placeholder="ABC-1234">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Quilometragem *</label>
+                        <input type="number" id="edit-vehicle-km" required min="0"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                            placeholder="0">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tipo de Combustível *</label>
+                    <div class="relative">
+                        <select id="edit-vehicle-fuel" required
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all bg-white appearance-none cursor-pointer">
+                            <option value="">Selecione...</option>
+                            <option value="gasoline">⛽ Gasolina</option>
+                            <option value="ethanol">🌽 Etanol</option>
+                            <option value="flex">🔋 Flex</option>
+                            <option value="diesel">🛢️ Diesel</option>
+                            <option value="gnv">💨 GNV</option>
+                            <option value="electric">⚡ Elétrico</option>
+                            <option value="hybrid">🔌 Híbrido</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-4 top-4 text-gray-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex gap-3">
+                    <button type="button" class="btn-close-modal flex-1 px-6 py-3.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold" data-modal="modal-edit-vehicle">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="flex-1 px-6 py-3.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-semibold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
+                        <i class="fas fa-save"></i>
+                        Salvar Alterações
                     </button>
                 </div>
             </form>
@@ -1198,6 +2203,15 @@
         <i id="toast-icon" class="fas fa-check-circle text-green-400 text-xl"></i>
         <span id="toast-message" class="font-medium">Operação realizada com sucesso!</span>
     </div>
+
+    <div id="pull-refresh-indicator" class="hidden">
+        <span class="refresh-spinner"></span>
+        <span>Atualizando...</span>
+    </div>
+
+    <div id="focus-mobile-overlay" class="hidden" aria-hidden="true"></div>
+
+    <div id="focus-indicator" class="focus-indicator hidden">Modo foco ativo</div>
 
     <!-- SCRIPTS -->
     <script src="js/constants.js"></script>

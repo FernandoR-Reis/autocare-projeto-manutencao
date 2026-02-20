@@ -8,6 +8,8 @@ const state = {
         days: 30,
         km: 1000,
         email: true,
+        sound: true,
+        haptic: true,
     },
     currentSection: 'dashboard',
     maintenanceFilter: 'all',
@@ -58,6 +60,8 @@ function syncStateFromStore() {
             days: storeState.settings.alertDays,
             km: storeState.settings.alertKm,
             email: storeState.settings.emailNotifications,
+            sound: storeState.settings.soundEnabled ?? state.alertSettings.sound,
+            haptic: storeState.settings.hapticEnabled ?? state.alertSettings.haptic,
         };
     }
 }
@@ -75,7 +79,257 @@ function syncStoreFromState() {
             alertDays: Number(state.alertSettings.days),
             alertKm: Number(state.alertSettings.km),
             emailNotifications: Boolean(state.alertSettings.email),
+            soundEnabled: Boolean(state.alertSettings.sound),
+            hapticEnabled: Boolean(state.alertSettings.haptic),
         },
+    });
+}
+
+let feedbackAudioContext = null;
+let feedbackAudioUnlocked = false;
+let pullTouchStartY = 0;
+let pullRefreshing = false;
+let pullArmed = false;
+let focusModeEnabled = false;
+let focusModeTimer = null;
+
+const IMPORTANT_FORM_IDS = new Set([
+    'form-add-vehicle',
+    'form-edit-vehicle',
+    'form-add-maintenance',
+    'form-update-km',
+]);
+
+function getFeedbackPreferences() {
+    return {
+        sound: state.alertSettings.sound !== false,
+        haptic: state.alertSettings.haptic !== false,
+    };
+}
+
+function ensureAudioContext() {
+    if (feedbackAudioContext) return feedbackAudioContext;
+
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return null;
+
+    try {
+        feedbackAudioContext = new AudioCtx();
+        return feedbackAudioContext;
+    } catch (error) {
+        return null;
+    }
+}
+
+function unlockFeedbackAudio() {
+    const audioContext = ensureAudioContext();
+    if (!audioContext) return;
+
+    if (audioContext.state === 'suspended') {
+        audioContext.resume().catch(() => {});
+    }
+
+    feedbackAudioUnlocked = true;
+}
+
+function playSuccessSound() {
+    const preferences = getFeedbackPreferences();
+    if (!preferences.sound) return;
+
+    const audioContext = ensureAudioContext();
+    if (!audioContext) return;
+    if (!feedbackAudioUnlocked && audioContext.state === 'suspended') return;
+
+    try {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        const startAt = audioContext.currentTime;
+
+        oscillator.frequency.setValueAtTime(523.25, startAt);
+        oscillator.frequency.exponentialRampToValueAtTime(1046.5, startAt + 0.1);
+
+        gainNode.gain.setValueAtTime(0.1, startAt);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startAt + 0.3);
+
+        oscillator.start(startAt);
+        oscillator.stop(startAt + 0.3);
+    } catch (error) {
+    }
+}
+
+function successHaptic() {
+    const preferences = getFeedbackPreferences();
+    if (!preferences.haptic) return;
+
+    if (typeof navigator.vibrate === 'function') {
+        navigator.vibrate([50, 100, 50]);
+    }
+}
+
+function pullRefreshHaptic() {
+    const preferences = getFeedbackPreferences();
+    if (!preferences.haptic) return;
+
+    if (typeof navigator.vibrate === 'function') {
+        navigator.vibrate(18);
+    }
+}
+
+function triggerSuccessFeedback() {
+    playSuccessSound();
+    successHaptic();
+}
+
+function showRefreshSpinner() {
+    const indicator = document.getElementById('pull-refresh-indicator');
+    if (!indicator) return;
+
+    indicator.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        indicator.classList.add('show');
+    });
+}
+
+function hideRefreshSpinner() {
+    const indicator = document.getElementById('pull-refresh-indicator');
+    if (!indicator) return;
+
+    indicator.classList.remove('show');
+    setTimeout(() => {
+        indicator.classList.add('hidden');
+    }, 200);
+}
+
+function canHandlePullRefreshGesture() {
+    const mainApp = document.getElementById('main-app');
+    if (!mainApp || mainApp.classList.contains('hidden')) return false;
+    if (!window.matchMedia('(max-width: 1023px)').matches) return false;
+    if (window.scrollY > 0) return false;
+
+    const hasOpenModal = Boolean(document.querySelector('.modal-backdrop:not(.hidden), #vehicle-mobile-sheet.show, #generic-modal'));
+    if (hasOpenModal) return false;
+
+    return true;
+}
+
+function refreshAppData() {
+    return Promise.resolve(loadData())
+        .then(() => {
+            checkMaintenanceStatus();
+            refreshAll();
+        });
+}
+
+function initPullToRefresh() {
+    document.addEventListener('touchstart', (event) => {
+        if (!canHandlePullRefreshGesture() || pullRefreshing) return;
+        if (!event.touches || event.touches.length !== 1) return;
+
+        pullTouchStartY = event.touches[0].clientY;
+        pullArmed = false;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (event) => {
+        if (!canHandlePullRefreshGesture() || pullRefreshing) return;
+        if (!event.touches || event.touches.length !== 1) return;
+
+        const pull = event.touches[0].clientY - pullTouchStartY;
+        if (pull <= 100 || pullArmed) return;
+
+        pullArmed = true;
+        pullRefreshing = true;
+        pullRefreshHaptic();
+        showRefreshSpinner();
+
+        refreshAppData()
+            .catch(() => {
+                showToast('Falha ao atualizar os dados.', 'error');
+            })
+            .finally(() => {
+                pullRefreshing = false;
+                hideRefreshSpinner();
+            });
+    }, { passive: true });
+
+    document.addEventListener('touchend', () => {
+        pullTouchStartY = 0;
+        pullArmed = false;
+    }, { passive: true });
+}
+
+function isInImportantForm(element) {
+    if (!element || !(element instanceof Element)) return false;
+
+    const form = element.closest('form');
+    if (!form || !IMPORTANT_FORM_IDS.has(form.id)) return false;
+
+    const parentModal = form.closest('.modal-backdrop, #generic-modal');
+    if (parentModal?.classList?.contains('hidden')) return false;
+
+    return true;
+}
+
+function setFocusMode(enabled, message = 'Modo foco ativo') {
+    const indicator = document.getElementById('focus-indicator');
+    const mobileOverlay = document.getElementById('focus-mobile-overlay');
+
+    focusModeEnabled = Boolean(enabled);
+    document.body.classList.toggle('focus-mode', focusModeEnabled);
+
+    if (mobileOverlay) {
+        mobileOverlay.classList.toggle('hidden', !focusModeEnabled);
+    }
+
+    if (!indicator) return;
+
+    if (focusModeEnabled) {
+        indicator.textContent = message;
+        indicator.classList.remove('hidden');
+    } else {
+        indicator.classList.add('hidden');
+    }
+}
+
+function scheduleFocusModeCheck() {
+    clearTimeout(focusModeTimer);
+    focusModeTimer = setTimeout(() => {
+        const active = document.activeElement;
+        if (!isInImportantForm(active)) {
+            setFocusMode(false);
+        }
+    }, 60);
+}
+
+function initFocusMode() {
+    document.addEventListener('focusin', (event) => {
+        if (isInImportantForm(event.target)) {
+            setFocusMode(true);
+        }
+    });
+
+    document.addEventListener('focusout', () => {
+        scheduleFocusModeCheck();
+    });
+
+    document.addEventListener('submit', (event) => {
+        const formId = event.target?.id;
+        if (!IMPORTANT_FORM_IDS.has(formId)) return;
+
+        setTimeout(() => {
+            setFocusMode(false);
+        }, 120);
+    });
+
+    document.addEventListener('click', (event) => {
+        if (event.target.closest('.btn-close-modal, [data-modal], #generic-modal-close')) {
+            setTimeout(() => {
+                setFocusMode(false);
+            }, 0);
+        }
     });
 }
 
@@ -95,6 +349,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     App.init();
     Navigation.init();
+    initPullToRefresh();
+    initFocusMode();
+
+    document.addEventListener('pointerdown', unlockFeedbackAudio, { once: true });
+    document.addEventListener('keydown', unlockFeedbackAudio, { once: true });
 
     if (state.currentUser) {
         showMainApp();
@@ -850,12 +1109,16 @@ function renderMaintenances() {
     const emptyState = document.getElementById('empty-maintenance');
 
     if (state.maintenances.length === 0) {
+        container.classList.remove('maintenance-timeline');
         container.innerHTML = '';
         emptyState.classList.remove('hidden');
+        updateMaintenanceFilterBadges();
         return;
     }
 
     emptyState.classList.add('hidden');
+    container.classList.add('maintenance-timeline');
+    updateMaintenanceFilterBadges();
 
     let filtered = state.maintenances;
     if (state.currentFilter !== 'all') {
@@ -870,6 +1133,11 @@ function renderMaintenances() {
 
     container.innerHTML = filtered.map((maintenance) => {
         const vehicle = state.vehicles.find((item) => item.id === maintenance.vehicleId);
+        const urgencyClass = maintenance.status === 'overdue'
+            ? 'critical'
+            : maintenance.status === 'warning'
+                ? 'warning'
+                : 'ok';
         const statusConfig = {
             ok: {
                 bg: 'bg-green-50',
@@ -907,7 +1175,7 @@ function renderMaintenances() {
         };
 
         return `
-            <div class="bg-white rounded-xl p-6 shadow-sm border-l-4 ${cfg.border.replace('border', 'border-l')} ${cfg.bg} border border-gray-200 hover:shadow-md transition-all">
+            <div class="maintenance-card ${urgencyClass} shadow-sm border border-gray-200 hover:shadow-md transition-all mb-4">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-2">
@@ -948,6 +1216,20 @@ function renderMaintenances() {
             </div>
         `;
     }).join('');
+}
+
+function updateMaintenanceFilterBadges() {
+    const overdueCount = state.maintenances.filter((maintenance) => maintenance.status === 'overdue').length;
+    const overdueBadge = document.getElementById('filter-overdue-count');
+
+    if (!overdueBadge) return;
+
+    if (overdueCount > 0) {
+        overdueBadge.textContent = String(overdueCount);
+        overdueBadge.classList.remove('hidden');
+    } else {
+        overdueBadge.classList.add('hidden');
+    }
 }
 
 function filterMaintenance(type) {
@@ -1048,6 +1330,7 @@ function handleAddMaintenance(event) {
     saveData();
     closeModal('modal-maintenance');
     updateUI();
+    triggerSuccessFeedback();
     showToast('Manutenção registrada com sucesso!', 'success');
 
     addNotification('maintenance_added', `Manutenção registrada: ${maintenance.name}`, `Registrado para ${vehicle?.model || 'veículo'} com próxima revisão em ${formatDate(maintenance.nextDate)}.`);
@@ -1092,8 +1375,72 @@ function editMaintenance() {
     showToast('Função de edição em desenvolvimento. Remova e recadastre se necessário.', 'info');
 }
 
-function deleteMaintenance(id) {
-    if (!confirm('Tem certeza que deseja excluir esta manutenção?')) return;
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function confirmDeleteMaintenance(id) {
+    const maintenance = state.maintenances.find((item) => item.id === id);
+    if (!maintenance) return;
+
+    const vehicle = state.vehicles.find((item) => item.id === maintenance.vehicleId);
+    const safeName = escapeHtml(maintenance.name || 'Serviço sem nome');
+    const safeVehicle = escapeHtml(vehicle ? `${vehicle.brand} ${vehicle.model}` : 'Veículo removido');
+    const safeDate = escapeHtml(formatDate(maintenance.date));
+    const safeKm = escapeHtml(Number(maintenance.km || 0).toLocaleString('pt-BR'));
+
+    if (!window.UI?.showModal) {
+        if (confirm('Tem certeza que deseja excluir esta manutenção?')) {
+            deleteMaintenanceConfirmed(id);
+        }
+        return;
+    }
+
+    UI.showModal('Tem certeza?', `
+        <div class="delete-preview">
+            <div class="delete-item">
+                <span>🔧</span>
+                <div>
+                    <strong>${safeName}</strong>
+                    <small>${safeVehicle} • ${safeDate} • ${safeKm} km</small>
+                </div>
+            </div>
+            <div class="delete-impact">
+                <span class="impact-badge">⚠️ Esse registro de manutenção será perdido permanentemente</span>
+            </div>
+        </div>
+        <div class="delete-actions">
+            <button type="button" id="delete-maint-cancel-btn" class="btn-cancel-vehicle flex-1 px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold">
+                Cancelar
+            </button>
+            <button type="button" id="delete-maint-confirm-btn" class="btn-danger">
+                Sim, deletar registro
+            </button>
+        </div>
+    `);
+
+    const closeGenericModal = () => {
+        document.getElementById('generic-modal')?.remove();
+    };
+
+    document.getElementById('delete-maint-cancel-btn')?.addEventListener('click', () => {
+        closeGenericModal();
+    }, { once: true });
+
+    document.getElementById('delete-maint-confirm-btn')?.addEventListener('click', () => {
+        closeGenericModal();
+        deleteMaintenanceConfirmed(id);
+    }, { once: true });
+}
+
+function deleteMaintenanceConfirmed(id) {
+    const exists = state.maintenances.some((item) => item.id === id);
+    if (!exists) return;
 
     const store = getStore();
     if (store && typeof store.removeMaintenance === 'function') {
@@ -1106,6 +1453,10 @@ function deleteMaintenance(id) {
     saveData();
     updateUI();
     showToast('Manutenção removida com sucesso!', 'success');
+}
+
+function deleteMaintenance(id) {
+    confirmDeleteMaintenance(id);
 }
 
 function checkMaintenanceStatus() {
@@ -1490,9 +1841,12 @@ function updateNotificationBadge() {
 
 function saveAlertSettings() {
     state.alertSettings = {
+        ...state.alertSettings,
         days: document.getElementById('alert-days').value,
         km: document.getElementById('alert-km').value,
         email: document.getElementById('email-notifications').checked,
+        sound: document.getElementById('sound-feedback')?.checked ?? state.alertSettings.sound,
+        haptic: document.getElementById('haptic-feedback')?.checked ?? state.alertSettings.haptic,
     };
 
     const store = getStore();
@@ -1501,6 +1855,8 @@ function saveAlertSettings() {
             alertDays: Number(state.alertSettings.days),
             alertKm: Number(state.alertSettings.km),
             emailNotifications: Boolean(state.alertSettings.email),
+            soundEnabled: Boolean(state.alertSettings.sound),
+            hapticEnabled: Boolean(state.alertSettings.haptic),
         });
         syncStateFromStore();
     }
@@ -1638,10 +1994,14 @@ function loadData() {
         const alertDays = document.getElementById('alert-days');
         const alertKm = document.getElementById('alert-km');
         const emailNotifications = document.getElementById('email-notifications');
+        const soundFeedback = document.getElementById('sound-feedback');
+        const hapticFeedback = document.getElementById('haptic-feedback');
 
         if (alertDays) alertDays.value = String(state.alertSettings.days);
         if (alertKm) alertKm.value = String(state.alertSettings.km);
         if (emailNotifications) emailNotifications.checked = Boolean(state.alertSettings.email);
+        if (soundFeedback) soundFeedback.checked = Boolean(state.alertSettings.sound);
+        if (hapticFeedback) hapticFeedback.checked = Boolean(state.alertSettings.haptic);
     } catch (error) {
         syncStateFromStore();
         state.providers = demoProviders;
@@ -1810,6 +2170,15 @@ const App = {
         document.getElementById('btn-empty-add-maintenance')?.addEventListener('click', () => openAddMaintenanceModal());
         document.getElementById('btn-quick-providers')?.addEventListener('click', () => Navigation.showSection('providers'));
 
+        document.querySelectorAll('.filter-btn[data-filter]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const filterType = button.getAttribute('data-filter');
+                if (filterType) {
+                    filterMaintenance(filterType);
+                }
+            });
+        });
+
         document.querySelectorAll('.btn-close-modal').forEach((btn) => {
             const newBtn = btn.cloneNode(true);
             btn.parentNode.replaceChild(newBtn, btn);
@@ -1872,6 +2241,8 @@ const App = {
         document.getElementById('alert-days')?.addEventListener('change', () => this.saveAlertSettings());
         document.getElementById('alert-km')?.addEventListener('change', () => this.saveAlertSettings());
         document.getElementById('email-notifications')?.addEventListener('change', () => this.saveAlertSettings());
+        document.getElementById('sound-feedback')?.addEventListener('change', () => this.saveAlertSettings());
+        document.getElementById('haptic-feedback')?.addEventListener('change', () => this.saveAlertSettings());
         document.getElementById('btn-mark-all-read')?.addEventListener('click', () => Notifications.markAllAsRead());
 
         this.loadAlertSettings();
@@ -1879,9 +2250,12 @@ const App = {
 
     saveAlertSettings() {
         AppState.alertSettings = {
+            ...AppState.alertSettings,
             days: parseInt(document.getElementById('alert-days').value, 10),
             km: parseInt(document.getElementById('alert-km').value, 10),
             email: document.getElementById('email-notifications').checked,
+            sound: document.getElementById('sound-feedback')?.checked ?? AppState.alertSettings.sound,
+            haptic: document.getElementById('haptic-feedback')?.checked ?? AppState.alertSettings.haptic,
         };
 
         AppState.saveToStorage();
@@ -1893,10 +2267,14 @@ const App = {
         const alertDays = document.getElementById('alert-days');
         const alertKm = document.getElementById('alert-km');
         const emailNotifications = document.getElementById('email-notifications');
+        const soundFeedback = document.getElementById('sound-feedback');
+        const hapticFeedback = document.getElementById('haptic-feedback');
 
         if (alertDays) alertDays.value = AppState.alertSettings.days;
         if (alertKm) alertKm.value = AppState.alertSettings.km;
         if (emailNotifications) emailNotifications.checked = AppState.alertSettings.email;
+        if (soundFeedback) soundFeedback.checked = AppState.alertSettings.sound !== false;
+        if (hapticFeedback) hapticFeedback.checked = AppState.alertSettings.haptic !== false;
     },
 };
 
@@ -1907,6 +2285,22 @@ const Navigation = {
     init() {
         if (this._bound) return;
         this._bound = true;
+
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebarToggleIcon = document.getElementById('sidebar-toggle-icon');
+
+        if (sidebar && sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                const isExpanded = sidebar.classList.toggle('expanded');
+                sidebarToggle.setAttribute('aria-expanded', String(isExpanded));
+
+                if (sidebarToggleIcon) {
+                    sidebarToggleIcon.classList.toggle('fa-chevron-right', !isExpanded);
+                    sidebarToggleIcon.classList.toggle('fa-chevron-left', isExpanded);
+                }
+            });
+        }
 
         document.querySelectorAll('.sidebar-btn[data-section]').forEach((btn) => {
             btn.addEventListener('click', (event) => {

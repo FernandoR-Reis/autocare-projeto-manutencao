@@ -19,6 +19,8 @@
             alertDays: constants.DEFAULT_ALERT_DAYS,
             alertKm: constants.DEFAULT_ALERT_KM,
             emailNotifications: true,
+            soundEnabled: true,
+            hapticEnabled: true,
         },
         ui: {
             currentPage: 'dashboard',
@@ -31,6 +33,7 @@
         constructor() {
             this.state = this.loadFromStorage() || this.clone(initialState);
             this.listeners = new Set();
+            this.mutations = this.createMutations();
             this.initialized = false;
         }
 
@@ -66,91 +69,163 @@
             return this.clone(this.state.settings);
         }
 
+        getUnreadNotificationsCount() {
+            return this.state.notifications.filter((notification) => !notification.read).length;
+        }
+
+        createMutations() {
+            return {
+                setState: (state, payload) => {
+                    Object.assign(state, payload || {});
+                    return true;
+                },
+                setUser: (state, payload) => {
+                    state.user = payload || null;
+                    return true;
+                },
+                addVehicle: (state, payload) => {
+                    if (!payload) {
+                        return false;
+                    }
+                    state.vehicles.push(payload);
+                    return true;
+                },
+                updateVehicle: (state, payload) => {
+                    const index = state.vehicles.findIndex((vehicle) => vehicle.id === payload?.id);
+                    if (index === -1) {
+                        return false;
+                    }
+                    state.vehicles[index] = { ...state.vehicles[index], ...(payload?.updates || {}) };
+                    return true;
+                },
+                removeVehicle: (state, payload) => {
+                    state.vehicles = state.vehicles.filter((vehicle) => vehicle.id !== payload);
+                    state.maintenances = state.maintenances.filter((maintenance) => maintenance.vehicleId !== payload);
+                    return true;
+                },
+                addMaintenance: (state, payload) => {
+                    if (!payload) {
+                        return false;
+                    }
+                    state.maintenances.push(payload);
+                    return true;
+                },
+                updateMaintenance: (state, payload) => {
+                    const index = state.maintenances.findIndex((maintenance) => maintenance.id === payload?.id);
+                    if (index === -1) {
+                        return false;
+                    }
+                    state.maintenances[index] = { ...state.maintenances[index], ...(payload?.updates || {}) };
+                    return true;
+                },
+                removeMaintenance: (state, payload) => {
+                    state.maintenances = state.maintenances.filter((maintenance) => maintenance.id !== payload);
+                    return true;
+                },
+                addNotification: (state, payload) => {
+                    if (!payload) {
+                        return false;
+                    }
+                    state.notifications.unshift(payload);
+                    if (state.notifications.length > 50) {
+                        state.notifications = state.notifications.slice(0, 50);
+                    }
+                    return true;
+                },
+                markNotificationAsRead: (state, payload) => {
+                    const notification = state.notifications.find((item) => item.id === payload);
+                    if (!notification || notification.read) {
+                        return false;
+                    }
+                    notification.read = true;
+                    return true;
+                },
+                markAllNotificationsAsRead: (state) => {
+                    let changed = false;
+                    state.notifications.forEach((notification) => {
+                        if (!notification.read) {
+                            notification.read = true;
+                            changed = true;
+                        }
+                    });
+                    return changed;
+                },
+                updateSettings: (state, payload) => {
+                    state.settings = { ...state.settings, ...(payload || {}) };
+                    return true;
+                },
+            };
+        }
+
+        commit(type, payload, options = {}) {
+            const mutation = this.mutations[type];
+            if (!mutation) {
+                console.warn(`Mutação não encontrada: ${type}`);
+                return false;
+            }
+
+            const hasChanged = mutation(this.state, payload);
+            if (hasChanged === false) {
+                return false;
+            }
+
+            if (!options.skipPersist) {
+                this.persist();
+            }
+
+            if (!options.silent) {
+                this.notify();
+            }
+
+            return true;
+        }
+
         setState(newState) {
-            this.state = { ...this.state, ...newState };
-            this.persist();
-            this.notify();
+            return this.commit('setState', newState);
         }
 
         setUser(user) {
-            this.state.user = user;
-            this.persist();
-            this.notify();
+            return this.commit('setUser', user);
         }
 
         addVehicle(vehicle) {
-            this.state.vehicles.push(vehicle);
-            this.persist();
-            this.notify();
+            return this.commit('addVehicle', vehicle);
         }
 
         updateVehicle(id, updates) {
-            const index = this.state.vehicles.findIndex((vehicle) => vehicle.id === id);
-            if (index !== -1) {
-                this.state.vehicles[index] = { ...this.state.vehicles[index], ...updates };
-                this.persist();
-                this.notify();
-            }
+            return this.commit('updateVehicle', { id, updates });
         }
 
         removeVehicle(id) {
-            this.state.vehicles = this.state.vehicles.filter((vehicle) => vehicle.id !== id);
-            this.state.maintenances = this.state.maintenances.filter((maintenance) => maintenance.vehicleId !== id);
-            this.persist();
-            this.notify();
+            return this.commit('removeVehicle', id);
         }
 
         addMaintenance(maintenance) {
-            this.state.maintenances.push(maintenance);
-            this.persist();
-            this.notify();
+            return this.commit('addMaintenance', maintenance);
         }
 
         updateMaintenance(id, updates) {
-            const index = this.state.maintenances.findIndex((maintenance) => maintenance.id === id);
-            if (index !== -1) {
-                this.state.maintenances[index] = { ...this.state.maintenances[index], ...updates };
-                this.persist();
-                this.notify();
-            }
+            return this.commit('updateMaintenance', { id, updates });
         }
 
         removeMaintenance(id) {
-            this.state.maintenances = this.state.maintenances.filter((maintenance) => maintenance.id !== id);
-            this.persist();
-            this.notify();
+            return this.commit('removeMaintenance', id);
         }
 
         addNotification(notification) {
-            this.state.notifications.unshift(notification);
-            if (this.state.notifications.length > 50) {
-                this.state.notifications = this.state.notifications.slice(0, 50);
-            }
-            this.persist();
-            this.notify();
+            return this.commit('addNotification', notification);
         }
 
         markNotificationAsRead(id) {
-            const notification = this.state.notifications.find((item) => item.id === id);
-            if (notification) {
-                notification.read = true;
-                this.persist();
-                this.notify();
-            }
+            return this.commit('markNotificationAsRead', id);
         }
 
         markAllNotificationsAsRead() {
-            this.state.notifications.forEach((notification) => {
-                notification.read = true;
-            });
-            this.persist();
-            this.notify();
+            return this.commit('markAllNotificationsAsRead');
         }
 
         updateSettings(settings) {
-            this.state.settings = { ...this.state.settings, ...settings };
-            this.persist();
-            this.notify();
+            return this.commit('updateSettings', settings);
         }
 
         persist() {

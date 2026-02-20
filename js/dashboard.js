@@ -4,6 +4,7 @@
 
 const Dashboard = {
 	dateIntervalId: null,
+	onboardingStorageKey: 'autocare_onboarding',
 
 	init() {
 		this.updateDate();
@@ -15,7 +16,204 @@ const Dashboard = {
 		this.updateStats();
 		this.renderNextMaintenances();
 		this.renderVehiclesOverview();
+		this.renderOnboarding();
 		this.loadHeroImage();
+	},
+
+	getOnboardingState() {
+		try {
+			const raw = localStorage.getItem(this.onboardingStorageKey);
+			const parsed = raw ? JSON.parse(raw) : {};
+			return {
+				skipped: parsed.skipped || {},
+				done: parsed.done || {},
+			};
+		} catch (error) {
+			return { skipped: {}, done: {} };
+		}
+	},
+
+	saveOnboardingState(state) {
+		try {
+			localStorage.setItem(this.onboardingStorageKey, JSON.stringify(state || { skipped: {}, done: {} }));
+		} catch (error) {
+			console.warn('Não foi possível salvar onboarding:', error);
+		}
+	},
+
+	hasVehicle() {
+		return Array.isArray(AppState.vehicles) && AppState.vehicles.length > 0;
+	},
+
+	hasMaintenance() {
+		return Array.isArray(AppState.maintenances) && AppState.maintenances.length > 0;
+	},
+
+	isDashboardEmpty() {
+		return !this.hasVehicle() && !this.hasMaintenance();
+	},
+
+	isReminderConfigured(onboardingState) {
+		const defaults = window.CONSTANTS || {};
+		const defaultDays = Number(defaults.DEFAULT_ALERT_DAYS || 30);
+		const defaultKm = Number(defaults.DEFAULT_ALERT_KM || 1000);
+
+		const changedInSettings = Number(AppState.alertSettings.days) !== defaultDays
+			|| Number(AppState.alertSettings.km) !== defaultKm
+			|| Boolean(AppState.alertSettings.email) !== true;
+
+		return Boolean(onboardingState?.done?.['set-reminders']) || changedInSettings;
+	},
+
+	getOnboardingSteps() {
+		const onboardingState = this.getOnboardingState();
+		const hasVehicle = this.hasVehicle();
+		const hasMaintenance = this.hasMaintenance();
+
+		const steps = [
+			{
+				id: 'add-vehicle',
+				title: 'Adicione seu primeiro veículo',
+				description: 'Cadastre marca, modelo e placa',
+				icon: '🚗',
+				skippable: false,
+				locked: false,
+				done: hasVehicle,
+			},
+			{
+				id: 'first-maintenance',
+				title: 'Registre uma manutenção',
+				description: 'Óleo, filtros ou revisão - comece com o básico',
+				icon: '🔧',
+				skippable: true,
+				locked: !hasVehicle,
+				done: hasMaintenance,
+			},
+			{
+				id: 'set-reminders',
+				title: 'Configure alertas',
+				description: 'Nunca mais perca uma troca de óleo',
+				icon: '🔔',
+				skippable: true,
+				locked: false,
+				done: this.isReminderConfigured(onboardingState),
+			},
+		];
+
+		let hasSkipReconciliation = false;
+		const mappedSteps = steps.map((step) => {
+			const wasSkipped = Boolean(onboardingState.skipped?.[step.id]);
+			if (step.done && wasSkipped) {
+				delete onboardingState.skipped[step.id];
+				hasSkipReconciliation = true;
+			}
+
+			return {
+				...step,
+				skipped: Boolean(onboardingState.skipped?.[step.id]),
+			};
+		});
+
+		if (hasSkipReconciliation) {
+			this.saveOnboardingState(onboardingState);
+		}
+
+		return mappedSteps;
+	},
+
+	startOnboardingStep(stepId) {
+		switch (stepId) {
+			case 'add-vehicle':
+				if (window.Vehicles?.openModal) {
+					window.Vehicles.openModal();
+				}
+				break;
+			case 'first-maintenance':
+				if (!this.hasVehicle()) {
+					if (window.UI?.showToast) window.UI.showToast('Cadastre um veículo primeiro.', 'info');
+					return;
+				}
+				if (window.Maintenance?.openModal) {
+					window.Maintenance.openModal();
+				}
+				break;
+			case 'set-reminders': {
+				const onboardingState = this.getOnboardingState();
+				onboardingState.done['set-reminders'] = true;
+				this.saveOnboardingState(onboardingState);
+				if (window.Navigation?.showSection) {
+					window.Navigation.showSection('notifications');
+				}
+				break;
+			}
+			default:
+				break;
+		}
+
+		this.renderOnboarding();
+	},
+
+	skipOnboardingStep(stepId) {
+		const onboardingState = this.getOnboardingState();
+		onboardingState.skipped[stepId] = true;
+		this.saveOnboardingState(onboardingState);
+		this.renderOnboarding();
+	},
+
+	renderOnboarding() {
+		const container = document.getElementById('dashboard-onboarding');
+		if (!container) return;
+
+		if (!this.isDashboardEmpty()) {
+			container.classList.add('hidden');
+			container.innerHTML = '';
+			return;
+		}
+
+		const steps = this.getOnboardingSteps();
+		const visibleSteps = steps.filter((step) => !step.skipped || step.done);
+		const totalSteps = visibleSteps.length || steps.length;
+		const completed = visibleSteps.filter((step) => step.done).length;
+		const progress = Math.round((completed / totalSteps) * 100);
+
+		container.classList.remove('hidden');
+		container.innerHTML = `
+			<div class="onboarding-card">
+				<div class="onboarding-header">
+					<div class="progress-ring">
+						<svg viewBox="0 0 36 36">
+							<path class="progress-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+							<path class="progress-fill" stroke-dasharray="${progress}, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+						</svg>
+						<span class="progress-text">${completed}/${totalSteps}</span>
+					</div>
+					<div>
+						<h3 class="text-lg font-bold text-slate-900">Primeiros passos</h3>
+						<p class="text-sm text-slate-500">Complete as etapas para iniciar o controle da sua manutenção.</p>
+					</div>
+				</div>
+				<div class="steps-list">
+					${visibleSteps.map((step) => {
+						const statusNode = step.done
+							? '<span class="step-status">✓</span>'
+							: step.locked
+								? '<span class="text-slate-500">🔒</span>'
+								: `<div class="step-actions"><button onclick="Dashboard.startOnboardingStep('${step.id}')" class="btn-sm btn-sm-primary">Começar</button>${step.skippable ? `<button onclick="Dashboard.skipOnboardingStep('${step.id}')" class="btn-sm btn-sm-ghost">Pular</button>` : ''}</div>`;
+
+						return `
+							<div class="step ${step.done ? 'done' : ''} ${step.locked ? 'locked' : ''}">
+								<div class="step-icon">${step.icon}</div>
+								<div class="step-content">
+									<h4>${step.title}</h4>
+									<p>${step.description}</p>
+								</div>
+								${statusNode}
+							</div>
+						`;
+					}).join('')}
+				</div>
+			</div>
+		`;
 	},
 
 	async loadHeroImage() {
