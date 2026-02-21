@@ -471,11 +471,7 @@ window.Maintenance = Object.assign(window.Maintenance || {}, {
         checkMaintenanceStatus();
     },
     openModal(vehicleId) {
-        openAddMaintenanceModal();
-        const vehicleSelect = document.getElementById('maint-vehicle');
-        if (vehicleSelect && vehicleId) {
-            vehicleSelect.value = String(vehicleId);
-        }
+        openAddMaintenanceModal(vehicleId);
     },
 });
 
@@ -1250,9 +1246,22 @@ function filterMaintenance(type) {
 }
 
 function openAddMaintenanceModal(preselectedVehicleId = null) {
+    syncStateFromStore();
+
+    const store = getStore();
+    const storeVehicles = store && typeof store.getVehicles === 'function' ? store.getVehicles() : [];
+    const appVehicles = Array.isArray(window.AppState?.vehicles) ? window.AppState.vehicles : [];
+    const vehicles = appVehicles.length > 0 ? appVehicles : storeVehicles;
+
+    if (Array.isArray(vehicles) && vehicles.length >= 0) {
+        state.vehicles = vehicles;
+    }
+
     const select = document.getElementById('maint-vehicle');
+    if (!select) return;
+
     select.innerHTML = '<option value="">Selecione o veículo...</option>'
-        + state.vehicles.map((vehicle) => `<option value="${vehicle.id}">${vehicle.brand} ${vehicle.model} (${vehicle.plate})</option>`).join('');
+        + state.vehicles.map((vehicle) => `<option value="${String(vehicle.id)}">${vehicle.brand} ${vehicle.model} (${vehicle.plate})</option>`).join('');
 
     if (preselectedVehicleId) {
         select.value = String(preselectedVehicleId);
@@ -1295,8 +1304,9 @@ function updateMaintenanceFields() {
 function handleAddMaintenance(event) {
     event.preventDefault();
 
-    const vehicleId = parseInt(document.getElementById('maint-vehicle').value, 10);
-    const vehicle = state.vehicles.find((item) => item.id === vehicleId);
+    const selectedVehicleId = document.getElementById('maint-vehicle').value;
+    const vehicle = state.vehicles.find((item) => String(item.id) === String(selectedVehicleId));
+    const vehicleId = vehicle ? vehicle.id : selectedVehicleId;
 
     const maintenance = {
         id: Date.now(),
