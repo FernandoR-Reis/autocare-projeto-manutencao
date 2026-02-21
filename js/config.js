@@ -68,4 +68,54 @@ const Config = {
     }
 };
 
+const API_CONFIG = {
+    baseURL: 'https://api.autocare.com/v1',
+    endpoints: {
+        appointments: '/appointments',
+        availability: '/availability',
+        upload: '/uploads'
+    },
+    headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': 'sua-chave-aqui'
+    },
+    timeout: 10000
+};
+
+async function apiRequest(endpoint, options = {}) {
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${API_CONFIG.baseURL}${normalizedEndpoint}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeout);
+
+    try {
+        const config = {
+            ...options,
+            signal: controller.signal,
+            headers: {
+                ...API_CONFIG.headers,
+                ...(options.headers || {})
+            }
+        };
+
+        const response = await fetch(url, config);
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || `HTTP ${response.status}`);
+        }
+
+        return response.json();
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            throw new Error('Tempo limite da requisição excedido');
+        }
+        throw error;
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
 window.Config = Config;
+window.API_CONFIG = API_CONFIG;
+window.apiRequest = apiRequest;

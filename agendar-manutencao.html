@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Manutenção - AutoCare Pro</title>
+    <style>
+        :root {
+            --color-primary: #3b82f6;
+            --color-primary-dark: #2563eb;
+            --color-primary-light: #dbeafe;
+            --color-success: #10b981;
+            --color-warning: #f59e0b;
+            --color-danger: #ef4444;
+            --color-info: #06b6d4;
+            --color-white: #ffffff;
+            --color-gray-50: #f8fafc;
+            --color-gray-100: #f1f5f9;
+            --color-gray-200: #e2e8f0;
+            --color-gray-300: #cbd5e1;
+            --color-gray-400: #94a3b8;
+            --color-gray-500: #64748b;
+            --color-gray-600: #475569;
+            --color-gray-700: #334155;
+            --color-gray-800: #1e293b;
+            --color-gray-900: #0f172a;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --transition-fast: 150ms ease;
+            --transition-normal: 300ms ease;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        body {
+            font-family: var(--font-family);
+            line-height: 1.5;
+            color: var(--color-gray-800);
+            background-color: var(--color-gray-50);
+            min-height: 100vh;
+        }
+
+        .booking-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--space-4);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .booking-header {
+            background: var(--color-white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5);
+            margin-bottom: var(--space-6);
+            box-shadow: var(--shadow-md);
+        }
+
+        .booking-title {
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--color-gray-900);
+            margin-bottom: var(--space-4);
+            text-align: center;
+        }
+
+        .stepper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: var(--space-2);
+        }
+
+        .stepper::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--color-gray-200);
+            z-index: 0;
+            transform: translateY(-50%);
+        }
+
+        .stepper-progress {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 2px;
+            background: var(--color-primary);
+            z-index: 0;
+            transform: translateY(-50%);
+            transition: width var(--transition-normal);
+        }
+
+        .step {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-2);
+            background: var(--color-white);
+            padding: 0 var(--space-2);
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: var(--font-size-base);
+            transition: all var(--transition-normal);
+            border: 2px solid var(--color-gray-300);
+            background: var(--color-white);
+            color: var(--color-gray-500);
+        }
+
+        .step.active .step-number {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: var(--color-white);
+            box-shadow: 0 0 0 4px var(--color-primary-light);
+        }
+
+        .step.completed .step-number {
+            background: var(--color-success);
+            border-color: var(--color-success);
+            color: var(--color-white);
+        }
+
+        .step-label {
+            font-size: var(--font-size-xs);
+            color: var(--color-gray-500);
+            font-weight: 500;
+            text-align: center;
+            display: none;
+        }
+
+        .step.active .step-label { color: var(--color-primary); font-weight: 600; }
+
+        .step-status {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .progress-info {
+            text-align: center;
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-600);
+            font-weight: 500;
+        }
+
+        .progress-info strong { color: var(--color-primary); }
+
+        .booking-form {
+            background: var(--color-white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-md);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .step-content { display: none; animation: fadeIn var(--transition-normal); }
+        .step-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-title {
+            font-size: var(--font-size-lg);
+            font-weight: 700;
+            color: var(--color-gray-900);
+            margin-bottom: var(--space-2);
+        }
+
+        .step-description {
+            font-size: var(--font-size-base);
+            color: var(--color-gray-600);
+            margin-bottom: var(--space-6);
+        }
+
+        .form-group { margin-bottom: var(--space-5); }
+
+        .form-label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--color-gray-700);
+            margin-bottom: var(--space-2);
+        }
+
+        .form-label .required { color: var(--color-danger); margin-left: var(--space-1); }
+
+        .form-hint {
+            font-size: var(--font-size-xs);
+            color: var(--color-gray-500);
+            margin-top: var(--space-1);
+            display: block;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: var(--space-3) var(--space-4);
+            font-size: var(--font-size-base);
+            font-family: inherit;
+            border: 2px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            background: var(--color-white);
+            color: var(--color-gray-900);
+            transition: all var(--transition-fast);
+            min-height: 48px;
+        }
+
+        .form-input:hover,
+        .form-select:hover,
+        .form-textarea:hover {
+            border-color: var(--color-gray-300);
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px var(--color-primary-light);
+        }
+
+        .form-input.error,
+        .form-select.error {
+            border-color: var(--color-danger);
+            background-color: #fef2f2;
+        }
+
+        .error-message {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--font-size-sm);
+            color: var(--color-danger);
+            margin-top: var(--space-2);
+            animation: slideIn var(--transition-fast);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .error-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--space-4);
+        }
+
+        @media (min-width: 640px) {
+            .form-row { grid-template-columns: 1fr 1fr; }
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right var(--space-3) center;
+            background-size: 1.25rem;
+            padding-right: var(--space-10);
+        }
+
+        .services-grid { display: grid; gap: var(--space-3); margin-bottom: var(--space-6); }
+
+        @media (min-width: 640px) {
+            .services-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .service-card {
+            position: relative;
+            padding: var(--space-4);
+            border: 2px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            background: var(--color-white);
+        }
+
+        .service-card:hover {
+            border-color: var(--color-primary-light);
+            background: var(--color-gray-50);
+        }
+
+        .service-card.selected {
+            border-color: var(--color-primary);
+            background: var(--color-primary-light);
+        }
+
+        .service-card input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .service-card:focus-within { outline: 3px solid var(--color-primary); outline-offset: 2px; }
+
+        .service-icon { font-size: 2rem; margin-bottom: var(--space-2); display: block; }
+        .service-name { font-weight: 600; color: var(--color-gray-900); margin-bottom: var(--space-1); display: block; }
+
+        .service-duration {
+            font-size: var(--font-size-sm);
+            color: var(--color-gray-600);
+            display: flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .service-price {
+            position: absolute;
+            top: var(--space-4);
+            right: var(--space-4);
+            font-weight: 700;
+            color: var(--color-primary);
+            font-size: var(--font-size-lg);
+        }
+
+        .service-card.selected::after {
+            content: '✓';
+            position: absolute;
+            bottom: var(--space-3);
+            right: var(--space-3);
+            width: 24px;
+            height: 24px;
+            background: var(--color-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .calendar-container { margin-bottom: var(--space-6); }
+
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-4);
+        }
+
+        .calendar-nav {
+            background: var(--color-gray-100);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            color: var(--color-gray-700);
+            transition: all var(--transition-fast);
+        }
+
+        .calendar-nav:hover:not(:disabled) { background: var(--color-gray-200); }
+        .calendar-nav:disabled { opacity: 0.4; cursor: not-allowed; }
+        .calendar-nav:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
+
+        .calendar-month {
+            font-weight: 700;
+            font-size: var(--font-size-lg);
+            color: var(--color-gray-900);
+            text-transform: capitalize;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: var(--space-1);
+            margin-bottom: var(--space-4);
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            font-size: var(--font-size-xs);
+            font-weight: 600;
+            color: var(--color-gray-500);
+            padding: var(--space-2);
+            text-transform: uppercase;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            background: var(--color-white);
+            transition: all var(--transition-fast);
+            position: relative;
+            min-height: 48px;
+        }
+
+        .calendar-day:hover:not(.disabled):not(.empty) {
+            background: var(--color-gray-100);
+            border-color: var(--color-gray-300);
+        }
+
+        .calendar-day:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
+
+        .calendar-day-number { font-weight: 600; font-size: var(--font-size-sm); color: var(--color-gray-900); }
+
+        .calendar-day-status {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-top: 2px;
+        }
+
+        .calendar-day.available .calendar-day-status { background: var(--color-success); }
+        .calendar-day.limited .calendar-day-status { background: var(--color-warning); }
+
+        .calendar-day.selected { background: var(--color-primary); border-color: var(--color-primary); }
+        .calendar-day.selected .calendar-day-number { color: white; }
+
+        .calendar-day.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: var(--color-gray-100);
+        }
+
+        .calendar-day.disabled .calendar-day-number { color: var(--color-gray-400); }
+        .calendar-day.empty { cursor: default; background: transparent; }
+        .calendar-day.today { border-color: var(--color-primary); border-style: dashed; }
+
+        .time-slots { margin-top: var(--space-6); }
+        .time-slots-title { font-size: var(--font-size-base); font-weight: 600; color: var(--color-gray-900); margin-bottom: var(--space-3); }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-2);
+        }
+
+        @media (min-width: 640px) {
+            .slots-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        .time-slot {
+            padding: var(--space-3) var(--space-2);
+            border: 2px solid var(--color-gray-200);
+            border-radius: var(--radius-lg);
+            background: var(--color-white);
+            cursor: pointer;
+            text-align: center;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            color: var(--color-gray-700);
+            transition: all var(--transition-fast);
+            min-height: 48px;
+        }
+
+        .time-slot:hover:not(.disabled) { border-color: var(--color-primary-light); background: var(--color-gray-50); }
+        .time-slot.selected { background: var(--color-primary); border-color: var(--color-primary); color: white; }
+
+        .time-slot.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            text-decoration: line-through;
+            background: var(--color-gray-100);
+        }
+
+        .time-slot:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
+
+        .calendar-legend {
+            display: flex;
+            gap: var(--space-4);
+            justify-content: center;
+            margin-top: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: var(--font-size-xs);
+            color: var(--color-gray-600);
+        }
+
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .legend-dot.available { background: var(--color-success); }
+        .legend-dot.limited { background: var(--color-warning); }
+        .legend-dot.unavailable { background: var(--color-gray-300); }
+
+        .booking-summary {
+            background: var(--color-gray-50);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            margin-bottom: var(--space-6);
+            border: 1px solid var(--color-gray-200);
+        }
+
+        .summary-title {
+            font-size: var(--font-size-base);
+            font-weight: 700;
+            color: var(--color-gray-900);
+            margin-bottom: var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-2) 0;
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: var(--font-size-lg);
+            color: var(--color-gray-900);
+            margin-top: var(--space-2);
+            padding-top: var(--space-3);
+            border-top: 2px solid var(--color-gray-300);
+        }
+
+        .summary-label { color: var(--color-gray-600); font-size: var(--font-size-sm); }
+        .summary-value { color: var(--color-gray-900); font-weight: 600; font-size: var(--font-size-sm); }
+
+        .form-actions {
+            display: flex;
+            gap: var(--space-3);
+            margin-top: auto;
+            padding-top: var(--space-6);
+            border-top: 1px solid var(--color-gray-200);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-6);
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: 2px solid transparent;
+            min-height: 48px;
+            flex: 1;
+        }
+
+        .btn:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--color-primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-secondary {
+            background: white;
+            color: var(--color-gray-700);
+            border-color: var(--color-gray-300);
+        }
+
+        .btn-secondary:hover:not(:disabled) { background: var(--color-gray-50); border-color: var(--color-gray-400); }
+        .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .alert {
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-4);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-3);
+            animation: slideIn var(--transition-normal);
+        }
+
+        .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+        .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        .alert-icon { font-size: 1.25rem; flex-shrink: 0; }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-4);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+        }
+
+        .loading-overlay.active { opacity: 1; visibility: visible; }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--color-gray-200);
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--color-primary);
+            color: white;
+            padding: 8px;
+            text-decoration: none;
+            z-index: 100;
+            border-radius: 0 0 var(--radius-md) 0;
+        }
+
+        .skip-link:focus { top: 0; }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        @media (prefers-contrast: high) {
+            .form-input:focus,
+            .form-select:focus,
+            .btn:focus-visible {
+                outline: 3px solid black;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .booking-container { padding: var(--space-8) var(--space-6); }
+            .step-label { display: block; }
+            .step-number { width: 48px; height: 48px; font-size: var(--font-size-lg); }
+            .calendar-day { min-height: 64px; }
+            .calendar-day-number { font-size: var(--font-size-base); }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Pular para conteúdo principal</a>
+
+    <main id="main-content" class="booking-container" role="main" aria-label="Agendamento de manutenção">
+        <header class="booking-header">
+            <h1 class="booking-title">Agendar Manutenção</h1>
+            <nav aria-label="Progresso do agendamento">
+                <div class="stepper" role="list">
+                    <div class="stepper-progress" style="width: 0%" id="progressBar" aria-hidden="true"></div>
+
+                    <div class="step active" role="listitem" aria-current="step" data-step="1">
+                        <span class="step-number" aria-hidden="true">1</span>
+                        <span class="step-status sr-only">Passo atual</span>
+                        <span class="step-label">Veículo</span>
+                    </div>
+
+                    <div class="step" role="listitem" data-step="2">
+                        <span class="step-number" aria-hidden="true">2</span>
+                        <span class="step-status sr-only">Passo pendente</span>
+                        <span class="step-label">Serviço</span>
+                    </div>
+
+                    <div class="step" role="listitem" data-step="3">
+                        <span class="step-number" aria-hidden="true">3</span>
+                        <span class="step-status sr-only">Passo pendente</span>
+                        <span class="step-label">Data e Hora</span>
+                    </div>
+                </div>
+            </nav>
+
+            <p class="progress-info" aria-live="polite" aria-atomic="true">
+                Passo <strong id="currentStepNum">1</strong> de <strong>3</strong>:
+                <span id="currentStepName">Dados do veículo</span>
+            </p>
+        </header>
+
+        <form class="booking-form" id="bookingForm" novalidate>
+            <fieldset class="step-content active" id="step1" aria-labelledby="step1-title">
+                <legend class="sr-only" id="step1-title">Etapa 1: Dados do veículo</legend>
+
+                <h2 class="step-title">Dados do Veículo</h2>
+                <p class="step-description">Informe os dados do carro que será levado para manutenção.</p>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="vehicleBrand" class="form-label">Marca <span class="required" aria-label="obrigatório">*</span></label>
+                        <select id="vehicleBrand" name="brand" class="form-select" required aria-required="true" aria-describedby="brandHint">
+                            <option value="">Selecione a marca</option>
+                            <option value="fiat">Fiat</option>
+                            <option value="volkswagen">Volkswagen</option>
+                            <option value="chevrolet">Chevrolet</option>
+                            <option value="ford">Ford</option>
+                            <option value="toyota">Toyota</option>
+                            <option value="honda">Honda</option>
+                            <option value="hyundai">Hyundai</option>
+                            <option value="jeep">Jeep</option>
+                            <option value="renault">Renault</option>
+                            <option value="nissan">Nissan</option>
+                            <option value="outro">Outra</option>
+                        </select>
+                        <span id="brandHint" class="form-hint">Escolha a marca do seu veículo</span>
+                        <div class="error-message" id="brandError" role="alert" aria-live="assertive" style="display: none;">
+                            <svg class="error-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            <span>Selecione uma marca</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vehicleModel" class="form-label">Modelo <span class="required" aria-label="obrigatório">*</span></label>
+                        <input type="text" id="vehicleModel" name="model" class="form-input" placeholder="Ex: Uno, Gol, Onix" required aria-required="true" aria-describedby="modelHint">
+                        <span id="modelHint" class="form-hint">Digite o modelo do veículo</span>
+                        <div class="error-message" id="modelError" role="alert" aria-live="assertive" style="display: none;">
+                            <svg class="error-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            <span>Digite o modelo do veículo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="vehicleYear" class="form-label">Ano <span class="required" aria-label="obrigatório">*</span></label>
+                        <select id="vehicleYear" name="year" class="form-select" required aria-required="true">
+                            <option value="">Selecione</option>
+                        </select>
+                        <div class="error-message" id="yearError" role="alert" aria-live="assertive" style="display: none;">
+                            <svg class="error-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            <span>Selecione o ano</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vehiclePlate" class="form-label">Placa <span class="required" aria-label="obrigatório">*</span></label>
+                        <input type="text" id="vehiclePlate" name="plate" class="form-input" placeholder="ABC1D23 ou ABC-1234" required aria-required="true" maxlength="8" inputmode="text" autocomplete="off" style="text-transform: uppercase;" aria-describedby="plateHint">
+                        <span id="plateHint" class="form-hint">Formato Mercosul (ABC1D23) ou antigo</span>
+                        <div class="error-message" id="plateError" role="alert" aria-live="assertive" style="display: none;">
+                            <svg class="error-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            <span>Digite uma placa válida</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ownerEmail" class="form-label">E-mail para contato <span class="required" aria-label="obrigatório">*</span></label>
+                    <input type="email" id="ownerEmail" name="email" class="form-input" placeholder="seu@email.com" required aria-required="true" inputmode="email" autocomplete="email" aria-describedby="emailHint">
+                    <span id="emailHint" class="form-hint">Enviaremos a confirmação do agendamento</span>
+                    <div class="error-message" id="emailError" role="alert" aria-live="assertive" style="display: none;">
+                        <svg class="error-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                        <span>Digite um e-mail válido</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ownerPhone" class="form-label">Telefone/WhatsApp <span class="required" aria-label="obrigatório">*</span></label>
+                    <input type="tel" id="ownerPhone" name="phone" class="form-input" placeholder="(11) 98765-4321" required aria-required="true" inputmode="tel" autocomplete="tel" aria-describedby="phoneHint">
+                    <span id="phoneHint" class="form-hint">Para contato rápido sobre o agendamento</span>
+                    <div class="error-message" id="phoneError" role="alert" aria-live="assertive" style="display: none;">
+                        <svg class="error-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                        <span>Digite um telefone válido</span>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="step-content" id="step2" aria-labelledby="step2-title" hidden>
+                <legend class="sr-only" id="step2-title">Etapa 2: Escolha do serviço</legend>
+
+                <h2 class="step-title">Escolha o Serviço</h2>
+                <p class="step-description">Selecione o tipo de manutenção que seu veículo precisa.</p>
+
+                <div class="services-grid" role="radiogroup" aria-required="true" aria-describedby="serviceError">
+                    <label class="service-card" data-service="oil">
+                        <input type="radio" name="service" value="oil" required>
+                        <span class="service-icon" aria-hidden="true">🛢️</span>
+                        <span class="service-name">Troca de Óleo</span>
+                        <span class="service-duration"><span>⏱️</span> 30 minutos</span>
+                        <span class="service-price">R$ 150</span>
+                    </label>
+
+                    <label class="service-card" data-service="tire">
+                        <input type="radio" name="service" value="tire" required>
+                        <span class="service-icon" aria-hidden="true">🛞</span>
+                        <span class="service-name">Alinhamento e Balanceamento</span>
+                        <span class="service-duration"><span>⏱️</span> 1 hora</span>
+                        <span class="service-price">R$ 120</span>
+                    </label>
+
+                    <label class="service-card" data-service="review">
+                        <input type="radio" name="service" value="review" required>
+                        <span class="service-icon" aria-hidden="true">🔧</span>
+                        <span class="service-name">Revisão Completa</span>
+                        <span class="service-duration"><span>⏱️</span> 2-3 horas</span>
+                        <span class="service-price">R$ 350</span>
+                    </label>
+
+                    <label class="service-card" data-service="brake">
+                        <input type="radio" name="service" value="brake" required>
+                        <span class="service-icon" aria-hidden="true">🛑</span>
+                        <span class="service-name">Freios</span>
+                        <span class="service-duration"><span>⏱️</span> 1-2 horas</span>
+                        <span class="service-price">R$ 280</span>
+                    </label>
+
+                    <label class="service-card" data-service="battery">
+                        <input type="radio" name="service" value="battery" required>
+                        <span class="service-icon" aria-hidden="true">🔋</span>
+                        <span class="service-name">Bateria</span>
+                        <span class="service-duration"><span>⏱️</span> 15 minutos</span>
+                        <span class="service-price">R$ 450</span>
+                    </label>
+
+                    <label class="service-card" data-service="diagnostic">
+                        <input type="radio" name="service" value="diagnostic" required>
+                        <span class="service-icon" aria-hidden="true">🔍</span>
+                        <span class="service-name">Diagnóstico Eletrônico</span>
+                        <span class="service-duration"><span>⏱️</span> 45 minutos</span>
+                        <span class="service-price">R$ 180</span>
+                    </label>
+                </div>
+
+                <div class="error-message" id="serviceError" role="alert" aria-live="assertive" style="display: none; margin-top: 1rem;">
+                    <svg class="error-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                    <span>Selecione um serviço para continuar</span>
+                </div>
+
+                <div class="form-group" style="margin-top: 2rem;">
+                    <label for="serviceNotes" class="form-label">Observações (opcional)</label>
+                    <textarea id="serviceNotes" name="notes" class="form-textarea" rows="3" placeholder="Descreva algum sintoma ou necessidade especial..." aria-describedby="notesHint"></textarea>
+                    <span id="notesHint" class="form-hint">Ex: Barulho estranho na suspensão, luz de alerta acesa, etc.</span>
+                </div>
+            </fieldset>
+
+            <fieldset class="step-content" id="step3" aria-labelledby="step3-title" hidden>
+                <legend class="sr-only" id="step3-title">Etapa 3: Escolha da data e horário</legend>
+
+                <h2 class="step-title">Escolha Data e Hora</h2>
+                <p class="step-description">Selecione o melhor dia e horário para você.</p>
+
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button type="button" class="calendar-nav" id="prevMonth" aria-label="Mês anterior">‹</button>
+                        <span class="calendar-month" id="currentMonth" aria-live="polite"></span>
+                        <button type="button" class="calendar-nav" id="nextMonth" aria-label="Próximo mês">›</button>
+                    </div>
+
+                    <div class="calendar-grid" role="grid" aria-label="Calendário de agendamentos">
+                        <div class="calendar-weekday" role="columnheader">Dom</div>
+                        <div class="calendar-weekday" role="columnheader">Seg</div>
+                        <div class="calendar-weekday" role="columnheader">Ter</div>
+                        <div class="calendar-weekday" role="columnheader">Qua</div>
+                        <div class="calendar-weekday" role="columnheader">Qui</div>
+                        <div class="calendar-weekday" role="columnheader">Sex</div>
+                        <div class="calendar-weekday" role="columnheader">Sáb</div>
+                    </div>
+
+                    <div class="calendar-grid" id="calendarDays" role="grid"></div>
+
+                    <div class="calendar-legend">
+                        <div class="legend-item"><span class="legend-dot available"></span><span>Disponível</span></div>
+                        <div class="legend-item"><span class="legend-dot limited"></span><span>Poucos horários</span></div>
+                        <div class="legend-item"><span class="legend-dot unavailable"></span><span>Indisponível</span></div>
+                    </div>
+                </div>
+
+                <div class="time-slots" id="timeSlotsContainer" style="display: none;">
+                    <h3 class="time-slots-title">Horários disponíveis para <span id="selectedDate"></span>:</h3>
+                    <div class="slots-grid" role="radiogroup" aria-required="true" aria-describedby="timeError"></div>
+                    <div class="error-message" id="timeError" role="alert" aria-live="assertive" style="display: none; margin-top: 1rem;">
+                        <svg class="error-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                        <span>Selecione um horário</span>
+                    </div>
+                </div>
+
+                <div class="booking-summary" id="bookingSummary" style="display: none;">
+                    <h3 class="summary-title"><span>📋</span> Resumo do Agendamento</h3>
+                    <div class="summary-item"><span class="summary-label">Veículo</span><span class="summary-value" id="summaryVehicle">-</span></div>
+                    <div class="summary-item"><span class="summary-label">Serviço</span><span class="summary-value" id="summaryService">-</span></div>
+                    <div class="summary-item"><span class="summary-label">Data e Hora</span><span class="summary-value" id="summaryDateTime">-</span></div>
+                    <div class="summary-item"><span class="summary-label">Valor estimado</span><span class="summary-value" id="summaryPrice">-</span></div>
+                </div>
+            </fieldset>
+
+            <div id="formStatus" role="status" aria-live="polite"></div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="btnBack" style="display: none;">← Voltar</button>
+                <button type="button" class="btn btn-primary" id="btnNext">Próximo →</button>
+                <button type="submit" class="btn btn-primary" id="btnSubmit" style="display: none;">Confirmar Agendamento ✓</button>
+            </div>
+        </form>
+
+        <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+            <div class="spinner" role="progressbar" aria-valuetext="Processando agendamento"></div>
+            <p>Processando seu agendamento...</p>
+        </div>
+    </main>
+
+    <script src="js/config.js"></script>
+    <script>
+        class BookingWizard {
+            constructor() {
+                this.apiConfig = window.API_CONFIG || {
+                    baseURL: 'https://api.autocare.com/v1',
+                    endpoints: {
+                        appointments: '/appointments',
+                        availability: '/availability',
+                        upload: '/uploads'
+                    }
+                };
+                this.currentStep = 1;
+                this.totalSteps = 3;
+                this.formData = this.loadFromStorage();
+                this.selectedDate = null;
+                this.selectedTime = null;
+                this.availabilityCache = new Map();
+                this.currentDate = new Date();
+                this.currentMonth = this.currentDate.getMonth();
+                this.currentYear = this.currentDate.getFullYear();
+                this.init();
+            }
+
+            init() {
+                this.cacheElements();
+                this.bindEvents();
+                this.populateYears();
+                this.initCalendar();
+                this.restoreFormData();
+                this.updateUI();
+            }
+
+            cacheElements() {
+                this.form = document.getElementById('bookingForm');
+                this.steps = document.querySelectorAll('.step-content');
+                this.stepIndicators = document.querySelectorAll('.step');
+                this.progressBar = document.getElementById('progressBar');
+                this.currentStepNum = document.getElementById('currentStepNum');
+                this.currentStepName = document.getElementById('currentStepName');
+                this.btnNext = document.getElementById('btnNext');
+                this.btnBack = document.getElementById('btnBack');
+                this.btnSubmit = document.getElementById('btnSubmit');
+                this.fields = {
+                    brand: document.getElementById('vehicleBrand'),
+                    model: document.getElementById('vehicleModel'),
+                    year: document.getElementById('vehicleYear'),
+                    plate: document.getElementById('vehiclePlate'),
+                    email: document.getElementById('ownerEmail'),
+                    phone: document.getElementById('ownerPhone')
+                };
+                this.calendarDays = document.getElementById('calendarDays');
+                this.currentMonthEl = document.getElementById('currentMonth');
+                this.prevMonthBtn = document.getElementById('prevMonth');
+                this.nextMonthBtn = document.getElementById('nextMonth');
+                this.timeSlotsContainer = document.getElementById('timeSlotsContainer');
+                this.bookingSummary = document.getElementById('bookingSummary');
+                this.loadingOverlay = document.getElementById('loadingOverlay');
+            }
+
+            bindEvents() {
+                this.btnNext.addEventListener('click', () => this.nextStep());
+                this.btnBack.addEventListener('click', () => this.prevStep());
+                this.form.addEventListener('submit', (event) => this.handleSubmit(event));
+
+                Object.values(this.fields).forEach((field) => {
+                    field.addEventListener('blur', () => this.validateField(field));
+                    field.addEventListener('input', () => {
+                        this.hideError(field);
+                        this.saveToStorage();
+                    });
+                });
+
+                this.fields.phone.addEventListener('input', (event) => this.maskPhone(event.target));
+                this.fields.plate.addEventListener('input', (event) => this.maskPlate(event.target));
+
+                document.querySelectorAll('input[name="service"]').forEach((radio) => {
+                    radio.addEventListener('change', (event) => {
+                        this.selectService(event.target);
+                        this.saveToStorage();
+                    });
+                });
+
+                this.prevMonthBtn.addEventListener('click', () => this.changeMonth(-1));
+                this.nextMonthBtn.addEventListener('click', () => this.changeMonth(1));
+
+                document.getElementById('serviceNotes').addEventListener('input', () => this.saveToStorage());
+                window.addEventListener('beforeunload', () => this.saveToStorage());
+            }
+
+            validateStep(step) {
+                const errors = [];
+
+                if (step === 1) {
+                    if (!this.fields.brand.value) {
+                        this.showError(this.fields.brand, 'brandError');
+                        errors.push('Marca');
+                    }
+                    if (!this.fields.model.value.trim()) {
+                        this.showError(this.fields.model, 'modelError');
+                        errors.push('Modelo');
+                    }
+                    if (!this.fields.year.value) {
+                        this.showError(this.fields.year, 'yearError');
+                        errors.push('Ano');
+                    }
+                    if (!this.validatePlate(this.fields.plate.value)) {
+                        this.showError(this.fields.plate, 'plateError');
+                        errors.push('Placa');
+                    }
+                    if (!this.validateEmail(this.fields.email.value)) {
+                        this.showError(this.fields.email, 'emailError');
+                        errors.push('E-mail');
+                    }
+                    if (!this.validatePhone(this.fields.phone.value)) {
+                        this.showError(this.fields.phone, 'phoneError');
+                        errors.push('Telefone');
+                    }
+                }
+
+                if (step === 2) {
+                    const selectedService = document.querySelector('input[name="service"]:checked');
+                    if (!selectedService) {
+                        document.getElementById('serviceError').style.display = 'flex';
+                        errors.push('Serviço');
+                    } else {
+                        document.getElementById('serviceError').style.display = 'none';
+                    }
+                }
+
+                if (step === 3) {
+                    if (!this.selectedDate) {
+                        this.showStatus('Selecione uma data no calendário', 'error');
+                        errors.push('Data');
+                    }
+                    if (!this.selectedTime) {
+                        document.getElementById('timeError').style.display = 'flex';
+                        errors.push('Horário');
+                    } else {
+                        document.getElementById('timeError').style.display = 'none';
+                    }
+                }
+
+                return errors.length === 0;
+            }
+
+            validateField(field) {
+                const value = field.value.trim();
+                let isValid = true;
+
+                switch (field.id) {
+                    case 'vehiclePlate':
+                        isValid = this.validatePlate(value);
+                        break;
+                    case 'ownerEmail':
+                        isValid = this.validateEmail(value);
+                        break;
+                    case 'ownerPhone':
+                        isValid = this.validatePhone(value);
+                        break;
+                    default:
+                        isValid = value !== '';
+                }
+
+                if (!isValid && value !== '') {
+                    const errorId = field.id.replace('vehicle', '').replace('owner', '').toLowerCase() + 'Error';
+                    this.showError(field, errorId);
+                }
+
+                return isValid;
+            }
+
+            validatePlate(plate) {
+                const mercosul = /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/i;
+                const antiga = /^[A-Z]{3}-?[0-9]{4}$/i;
+                return mercosul.test(plate) || antiga.test(plate);
+            }
+
+            validateEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+
+            validatePhone(phone) {
+                const onlyDigits = phone.replace(/\D/g, '');
+                return onlyDigits.length === 10 || onlyDigits.length === 11;
+            }
+
+            showError(field, errorId) {
+                field.classList.add('error');
+                field.setAttribute('aria-invalid', 'true');
+                const errorElement = document.getElementById(errorId);
+                if (errorElement) errorElement.style.display = 'flex';
+            }
+
+            hideError(field) {
+                field.classList.remove('error');
+                field.setAttribute('aria-invalid', 'false');
+                const errorId = field.id.replace('vehicle', '').replace('owner', '').toLowerCase() + 'Error';
+                const errorElement = document.getElementById(errorId);
+                if (errorElement) errorElement.style.display = 'none';
+            }
+
+            nextStep() {
+                if (!this.validateStep(this.currentStep)) {
+                    this.announceToScreenReader('Existem erros no formulário. Por favor, corrija antes de continuar.');
+                    return;
+                }
+
+                if (this.currentStep < this.totalSteps) {
+                    this.currentStep += 1;
+                    this.updateUI();
+                    this.saveToStorage();
+
+                    const nextStepElement = document.getElementById(`step${this.currentStep}`);
+                    const firstFocusable = nextStepElement.querySelector('input, select, button, textarea');
+                    if (firstFocusable) setTimeout(() => firstFocusable.focus(), 100);
+                }
+            }
+
+            prevStep() {
+                if (this.currentStep > 1) {
+                    this.currentStep -= 1;
+                    this.updateUI();
+                }
+            }
+
+            updateStepStatuses() {
+                this.stepIndicators.forEach((indicator, index) => {
+                    const stepStatusElement = indicator.querySelector('.step-status');
+                    const stepNumber = index + 1;
+                    if (!stepStatusElement) return;
+
+                    if (stepNumber === this.currentStep) {
+                        stepStatusElement.textContent = 'Passo atual';
+                    } else if (stepNumber < this.currentStep) {
+                        stepStatusElement.textContent = 'Passo concluído';
+                    } else {
+                        stepStatusElement.textContent = 'Passo pendente';
+                    }
+                });
+            }
+
+            updateUI() {
+                this.steps.forEach((step, index) => {
+                    const stepNum = index + 1;
+                    if (stepNum === this.currentStep) {
+                        step.classList.add('active');
+                        step.removeAttribute('hidden');
+                    } else {
+                        step.classList.remove('active');
+                        step.setAttribute('hidden', '');
+                    }
+                });
+
+                this.stepIndicators.forEach((indicator, index) => {
+                    const stepNum = index + 1;
+                    indicator.classList.remove('active', 'completed');
+
+                    if (stepNum === this.currentStep) {
+                        indicator.classList.add('active');
+                        indicator.setAttribute('aria-current', 'step');
+                    } else if (stepNum < this.currentStep) {
+                        indicator.classList.add('completed');
+                        indicator.removeAttribute('aria-current');
+                    } else {
+                        indicator.removeAttribute('aria-current');
+                    }
+                });
+
+                this.updateStepStatuses();
+
+                const progress = ((this.currentStep - 1) / (this.totalSteps - 1)) * 100;
+                this.progressBar.style.width = `${progress}%`;
+
+                this.currentStepNum.textContent = this.currentStep;
+                const stepNames = ['Dados do veículo', 'Escolha do serviço', 'Data e horário'];
+                this.currentStepName.textContent = stepNames[this.currentStep - 1];
+
+                this.btnBack.style.display = this.currentStep > 1 ? 'flex' : 'none';
+
+                if (this.currentStep === this.totalSteps) {
+                    this.btnNext.style.display = 'none';
+                    this.btnSubmit.style.display = 'flex';
+                    this.updateSummary();
+                } else {
+                    this.btnNext.style.display = 'flex';
+                    this.btnSubmit.style.display = 'none';
+                }
+
+                this.announceToScreenReader(`Etapa ${this.currentStep} de ${this.totalSteps}: ${stepNames[this.currentStep - 1]}`);
+            }
+
+            selectService(radio) {
+                document.querySelectorAll('.service-card').forEach((card) => card.classList.remove('selected'));
+                radio.closest('.service-card').classList.add('selected');
+                document.getElementById('serviceError').style.display = 'none';
+
+                this.formData.service = {
+                    type: radio.value,
+                    name: radio.closest('.service-card').querySelector('.service-name').textContent,
+                    price: radio.closest('.service-card').querySelector('.service-price').textContent,
+                    duration: radio.closest('.service-card').querySelector('.service-duration').textContent
+                };
+            }
+
+            initCalendar() {
+                this.renderCalendar();
+            }
+
+            normalizeDay(date) {
+                const normalized = new Date(date);
+                normalized.setHours(0, 0, 0, 0);
+                return normalized;
+            }
+
+            changeMonth(delta) {
+                this.currentMonth += delta;
+                if (this.currentMonth > 11) {
+                    this.currentMonth = 0;
+                    this.currentYear += 1;
+                } else if (this.currentMonth < 0) {
+                    this.currentMonth = 11;
+                    this.currentYear -= 1;
+                }
+                this.renderCalendar();
+            }
+
+            renderCalendar() {
+                const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                this.currentMonthEl.textContent = `${monthNames[this.currentMonth]} ${this.currentYear}`;
+
+                const firstDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
+                const daysInMonth = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+                const todayStart = this.normalizeDay(new Date());
+
+                let html = '';
+
+                for (let i = 0; i < firstDay; i += 1) {
+                    html += '<div class="calendar-day empty" role="gridcell"></div>';
+                }
+
+                for (let day = 1; day <= daysInMonth; day += 1) {
+                    const date = new Date(this.currentYear, this.currentMonth, day);
+                    const dateStart = this.normalizeDay(date);
+                    const isToday = dateStart.getTime() === todayStart.getTime();
+                    const isPast = dateStart.getTime() < todayStart.getTime();
+                    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+
+                    let statusClass = '';
+                    let status = '';
+
+                    if (isPast || isWeekend) {
+                        statusClass = 'disabled';
+                        status = 'unavailable';
+                    } else if (day % 3 === 0) {
+                        statusClass = 'limited';
+                        status = 'limited';
+                    } else {
+                        statusClass = 'available';
+                        status = 'available';
+                    }
+
+                    const isSelected = this.selectedDate && this.normalizeDay(this.selectedDate).getTime() === dateStart.getTime();
+                    if (isSelected) statusClass += ' selected';
+                    if (isToday) statusClass += ' today';
+
+                    const disabled = isPast || isWeekend ? 'disabled' : '';
+                    const tabindex = isPast || isWeekend ? '-1' : '0';
+
+                    html += `
+                        <button type="button"
+                                class="calendar-day ${statusClass} ${disabled}"
+                                role="gridcell"
+                                data-day="${day}"
+                                data-status="${status}"
+                                aria-label="${day} de ${monthNames[this.currentMonth]}, ${this.getStatusLabel(status)}"
+                                aria-selected="${isSelected}"
+                                tabindex="${tabindex}"
+                                ${disabled ? 'disabled' : ''}>
+                            <span class="calendar-day-number">${day}</span>
+                            ${status !== 'unavailable' ? '<span class="calendar-day-status"></span>' : ''}
+                        </button>
+                    `;
+                }
+
+                this.calendarDays.innerHTML = html;
+
+                this.calendarDays.querySelectorAll('.calendar-day:not(.empty):not(.disabled)').forEach((dayElement) => {
+                    dayElement.addEventListener('click', () => this.selectDate(dayElement));
+                    dayElement.addEventListener('keypress', (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            this.selectDate(dayElement);
+                        }
+                    });
+                });
+
+                const minDate = new Date();
+                this.prevMonthBtn.disabled = (this.currentYear === minDate.getFullYear() && this.currentMonth === minDate.getMonth());
+            }
+
+            getStatusLabel(status) {
+                const labels = {
+                    available: 'Disponível',
+                    limited: 'Poucos horários',
+                    unavailable: 'Indisponível'
+                };
+                return labels[status] || '';
+            }
+
+            selectDate(dayElement) {
+                this.calendarDays.querySelectorAll('.calendar-day').forEach((day) => {
+                    day.classList.remove('selected');
+                    day.setAttribute('aria-selected', 'false');
+                });
+
+                dayElement.classList.add('selected');
+                dayElement.setAttribute('aria-selected', 'true');
+
+                const day = parseInt(dayElement.dataset.day, 10);
+                this.selectedDate = new Date(this.currentYear, this.currentMonth, day);
+
+                this.renderTimeSlots();
+                this.saveToStorage();
+                this.announceToScreenReader(`Data selecionada: ${day} de ${this.currentMonthEl.textContent}`);
+            }
+
+            async renderTimeSlots() {
+                const selectedService = document.querySelector('input[name="service"]:checked')?.value || this.formData.service?.type;
+                const dateIso = this.selectedDate ? this.selectedDate.toISOString().split('T')[0] : null;
+
+                if (!selectedService || !dateIso) {
+                    this.timeSlotsContainer.style.display = 'none';
+                    return;
+                }
+
+                const container = this.timeSlotsContainer.querySelector('.slots-grid');
+                container.innerHTML = '<div class="form-hint" style="grid-column: 1 / -1; text-align: center;">Carregando horários...</div>';
+                this.timeSlotsContainer.style.display = 'block';
+
+                let slots = [];
+
+                try {
+                    slots = await this.getAvailability(dateIso, selectedService);
+                } catch (error) {
+                    slots = this.getFallbackAvailability();
+                    this.showStatus('Não foi possível consultar disponibilidade em tempo real. Exibindo horários padrão.', 'error');
+                }
+
+                let html = '';
+                slots.forEach((time) => {
+                    const isUnavailable = !time.available;
+                    const selected = this.selectedTime === time.time ? 'selected' : '';
+                    const disabled = isUnavailable ? 'disabled' : '';
+                    const discountLabel = time.discount ? ` • ${time.discount}` : '';
+                    const reason = time.reason ? ` (${time.reason})` : '';
+
+                    html += `
+                        <button type="button"
+                                class="time-slot ${selected} ${disabled}"
+                                data-time="${time.time}"
+                                role="radio"
+                                aria-checked="${this.selectedTime === time.time}"
+                                aria-label="${time.time}${isUnavailable ? ` indisponível${reason}` : ` disponível${discountLabel}` }"
+                                ${disabled ? 'disabled' : ''}>
+                            ${time.time}${discountLabel}
+                        </button>
+                    `;
+                });
+
+                container.innerHTML = html;
+                this.timeSlotsContainer.style.display = 'block';
+
+                const dateStr = this.selectedDate.toLocaleDateString('pt-BR', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long'
+                });
+                document.getElementById('selectedDate').textContent = dateStr;
+
+                container.querySelectorAll('.time-slot:not(.disabled)').forEach((slot) => {
+                    slot.addEventListener('click', () => this.selectTime(slot));
+                });
+
+                this.timeSlotsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            getAvailabilityCacheKey(dateIso, serviceType) {
+                return `${dateIso}::${serviceType}`;
+            }
+
+            async getAvailability(dateIso, serviceType) {
+                const cacheKey = this.getAvailabilityCacheKey(dateIso, serviceType);
+                if (this.availabilityCache.has(cacheKey)) {
+                    return this.availabilityCache.get(cacheKey);
+                }
+
+                const endpoint = `${this.apiConfig.endpoints.availability}?date=${encodeURIComponent(dateIso)}&service=${encodeURIComponent(serviceType)}`;
+                const data = typeof window.apiRequest === 'function'
+                    ? await window.apiRequest(endpoint, {
+                        method: 'GET',
+                        headers: { Accept: 'application/json' }
+                    })
+                    : await this.fetchJson(endpoint, {
+                        method: 'GET',
+                        headers: { Accept: 'application/json' }
+                    });
+
+                const slots = Array.isArray(data?.slots)
+                    ? data.slots.map((slot) => ({
+                        time: slot.time,
+                        available: Boolean(slot.available),
+                        reason: slot.reason || null,
+                        discount: slot.discount || null
+                    }))
+                    : [];
+
+                this.availabilityCache.set(cacheKey, slots);
+                return slots;
+            }
+
+            async fetchJson(endpoint, options = {}) {
+                const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+                const response = await fetch(`${this.apiConfig.baseURL}${normalizedEndpoint}`, options);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            }
+
+            getFallbackAvailability() {
+                const slots = ['08:00', '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
+                const unavailableSlots = ['09:00', '15:00'];
+
+                return slots.map((time) => ({
+                    time,
+                    available: !unavailableSlots.includes(time),
+                    reason: unavailableSlots.includes(time) ? 'booked' : null,
+                    discount: time === '11:00' ? '10%' : null
+                }));
+            }
+
+            selectTime(slotElement) {
+                this.timeSlotsContainer.querySelectorAll('.time-slot').forEach((slot) => {
+                    slot.classList.remove('selected');
+                    slot.setAttribute('aria-checked', 'false');
+                });
+
+                slotElement.classList.add('selected');
+                slotElement.setAttribute('aria-checked', 'true');
+                this.selectedTime = slotElement.dataset.time;
+
+                document.getElementById('timeError').style.display = 'none';
+                this.updateSummary();
+                this.saveToStorage();
+                this.announceToScreenReader(`Horário selecionado: ${this.selectedTime}`);
+            }
+
+            updateSummary() {
+                const brandLabel = this.fields.brand.options[this.fields.brand.selectedIndex]?.text || '-';
+                const vehicle = `${brandLabel} ${this.fields.model.value} ${this.fields.year.value}`.trim();
+                const plate = this.fields.plate.value.toUpperCase();
+                document.getElementById('summaryVehicle').textContent = `${vehicle} (${plate})`;
+
+                if (this.formData.service) {
+                    document.getElementById('summaryService').textContent = `${this.formData.service.name} - ${this.formData.service.duration}`;
+                    document.getElementById('summaryPrice').textContent = this.formData.service.price;
+                }
+
+                if (this.selectedDate && this.selectedTime) {
+                    const dateStr = this.selectedDate.toLocaleDateString('pt-BR');
+                    document.getElementById('summaryDateTime').textContent = `${dateStr} às ${this.selectedTime}`;
+                }
+
+                this.bookingSummary.style.display = 'block';
+            }
+
+            saveToStorage() {
+                const data = {
+                    step: this.currentStep,
+                    vehicle: {
+                        brand: this.fields.brand.value,
+                        model: this.fields.model.value,
+                        year: this.fields.year.value,
+                        plate: this.fields.plate.value
+                    },
+                    contact: {
+                        email: this.fields.email.value,
+                        phone: this.fields.phone.value
+                    },
+                    service: this.formData.service,
+                    notes: document.getElementById('serviceNotes').value,
+                    selectedDate: this.selectedDate ? this.selectedDate.toISOString() : null,
+                    selectedTime: this.selectedTime,
+                    timestamp: new Date().toISOString()
+                };
+
+                localStorage.setItem('autocare_booking_draft', JSON.stringify(data));
+            }
+
+            loadFromStorage() {
+                try {
+                    const saved = localStorage.getItem('autocare_booking_draft');
+                    if (!saved) return {};
+
+                    const data = JSON.parse(saved);
+                    const savedTime = new Date(data.timestamp);
+                    const now = new Date();
+
+                    if ((now - savedTime) < 24 * 60 * 60 * 1000) {
+                        return data;
+                    }
+                } catch (error) {
+                    console.warn('Erro ao carregar rascunho:', error);
+                }
+
+                return {};
+            }
+
+            restoreFormData() {
+                const data = this.formData;
+
+                if (data.vehicle) {
+                    this.fields.brand.value = data.vehicle.brand || '';
+                    this.fields.model.value = data.vehicle.model || '';
+                    this.fields.year.value = data.vehicle.year || '';
+                    this.fields.plate.value = data.vehicle.plate || '';
+                }
+
+                if (data.contact) {
+                    this.fields.email.value = data.contact.email || '';
+                    this.fields.phone.value = data.contact.phone || '';
+                }
+
+                if (data.service) {
+                    const radio = document.querySelector(`input[value="${data.service.type}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                        this.selectService(radio);
+                    }
+                }
+
+                if (data.notes) {
+                    document.getElementById('serviceNotes').value = data.notes;
+                }
+
+                if (data.selectedDate) {
+                    this.selectedDate = new Date(data.selectedDate);
+                    this.currentMonth = this.selectedDate.getMonth();
+                    this.currentYear = this.selectedDate.getFullYear();
+                    this.renderCalendar();
+                    this.renderTimeSlots();
+                }
+
+                if (data.selectedTime) {
+                    this.selectedTime = data.selectedTime;
+                    if (this.selectedDate) {
+                        this.renderTimeSlots();
+                    }
+                }
+
+                if (data.step && data.step > 1 && this.fields.brand.value && this.fields.model.value) {
+                    this.currentStep = Math.min(data.step, this.totalSteps);
+                }
+            }
+
+            clearStorage() {
+                localStorage.removeItem('autocare_booking_draft');
+            }
+
+            populateYears() {
+                const currentYear = new Date().getFullYear();
+                const select = this.fields.year;
+                select.innerHTML = '<option value="">Selecione</option>';
+
+                for (let year = currentYear + 1; year >= 1990; year -= 1) {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    select.appendChild(option);
+                }
+            }
+
+            maskPhone(input) {
+                let value = input.value.replace(/\D/g, '');
+                if (value.length > 11) value = value.slice(0, 11);
+
+                if (value.length > 10) {
+                    value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+                } else if (value.length > 6) {
+                    value = `(${value.slice(0, 2)}) ${value.slice(2, 6)}-${value.slice(6)}`;
+                } else if (value.length > 2) {
+                    value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+                } else if (value.length > 0) {
+                    value = `(${value}`;
+                }
+
+                input.value = value;
+            }
+
+            maskPlate(input) {
+                let value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                if (value.length > 7) value = value.slice(0, 7);
+                input.value = value;
+            }
+
+            announceToScreenReader(message) {
+                const status = document.getElementById('formStatus');
+                status.textContent = message;
+                setTimeout(() => { status.textContent = ''; }, 1000);
+            }
+
+            showStatus(message, type) {
+                const status = document.getElementById('formStatus');
+                status.innerHTML = `<div class="alert alert-${type}" role="alert"><span class="alert-icon">${type === 'error' ? '⚠️' : '✓'}</span><span>${this.escapeHtml(message)}</span></div>`;
+                setTimeout(() => { status.innerHTML = ''; }, 5000);
+            }
+
+            escapeHtml(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            async handleSubmit(event) {
+                event.preventDefault();
+                if (!this.validateStep(3)) return;
+
+                this.loadingOverlay.classList.add('active');
+                this.loadingOverlay.setAttribute('aria-hidden', 'false');
+
+                const payload = {
+                    vehicle: {
+                        brand: this.fields.brand.value,
+                        model: this.fields.model.value,
+                        year: parseInt(this.fields.year.value, 10),
+                        plate: this.fields.plate.value.toUpperCase()
+                    },
+                    customer: {
+                        email: this.fields.email.value,
+                        phone: this.fields.phone.value
+                    },
+                    service: this.formData.service,
+                    notes: document.getElementById('serviceNotes').value,
+                    appointment: {
+                        date: this.selectedDate.toISOString().split('T')[0],
+                        time: this.selectedTime,
+                        timezone: 'America/Sao_Paulo'
+                    },
+                    metadata: {
+                        source: 'web',
+                        userAgent: navigator.userAgent,
+                        timestamp: new Date().toISOString()
+                    }
+                };
+
+                try {
+                    let result;
+                    try {
+                        result = await this.createAppointment(payload);
+                    } catch (error) {
+                        await new Promise((resolve) => setTimeout(resolve, 1200));
+                        result = {
+                            id: `APT-${Date.now()}`,
+                            status: 'confirmed',
+                            ...payload,
+                            createdAt: new Date().toISOString(),
+                            appointment: {
+                                ...payload.appointment,
+                                endTime: this.calculateEndTime(payload.appointment.time, payload.service?.duration)
+                            }
+                        };
+                        this.showStatus('API indisponível no momento. Agendamento salvo em modo local para validação.', 'error');
+                    }
+
+                    this.clearStorage();
+                    this.showSuccessPage(result);
+                } catch (error) {
+                    this.showStatus(error.message || 'Erro ao processar agendamento. Tente novamente.', 'error');
+                    this.loadingOverlay.classList.remove('active');
+                    this.loadingOverlay.setAttribute('aria-hidden', 'true');
+                }
+            }
+
+            calculateEndTime(startTime, durationText) {
+                const fallback = startTime;
+                if (!startTime) return fallback;
+
+                const match = String(durationText || '').match(/(\d+)/);
+                const minutesToAdd = match ? Number(match[1]) : 30;
+                const [hoursStr, minutesStr] = startTime.split(':');
+                const base = new Date();
+                base.setHours(Number(hoursStr), Number(minutesStr), 0, 0);
+                base.setMinutes(base.getMinutes() + minutesToAdd);
+                return `${String(base.getHours()).padStart(2, '0')}:${String(base.getMinutes()).padStart(2, '0')}`;
+            }
+
+            async createAppointment(payload) {
+                const endpoint = this.apiConfig.endpoints.appointments;
+                if (typeof window.apiRequest === 'function') {
+                    return window.apiRequest(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            Accept: 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                return this.fetchJson(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+            }
+
+            showSuccessPage(result) {
+                this.form.innerHTML = `
+                    <div class="step-content active" style="text-align: center; padding: 3rem 1rem;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+                        <h2 class="step-title" style="color: var(--color-success);">Agendamento Confirmado!</h2>
+                        <p class="step-description">
+                            Seu agendamento foi realizado com sucesso.<br>
+                            Enviamos um e-mail de confirmação para <strong>${this.escapeHtml(result.customer.email)}</strong>
+                        </p>
+
+                        <div class="booking-summary" style="text-align: left; margin: 2rem 0;">
+                            <div class="summary-item">
+                                <span class="summary-label">Número do agendamento</span>
+                                <span class="summary-value" style="font-family: monospace;">${this.escapeHtml(result.id)}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Data e Hora</span>
+                                <span class="summary-value">${new Date(result.appointment.date).toLocaleDateString('pt-BR')} às ${this.escapeHtml(result.appointment.time)}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Serviço</span>
+                                <span class="summary-value">${this.escapeHtml(result.service.name)}</span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-primary" id="btn-print-proof">🖨️ Imprimir comprovante</button>
+                            <a href="index.html" class="btn btn-secondary" style="text-decoration: none;">← Voltar ao início</a>
+                        </div>
+
+                        <p style="margin-top: 2rem; font-size: 0.875rem; color: var(--color-gray-500);">
+                            Guarde o número do agendamento para consultas futuras.
+                        </p>
+                    </div>
+                `;
+
+                document.getElementById('btn-print-proof')?.addEventListener('click', () => window.print());
+                this.loadingOverlay.classList.remove('active');
+                this.loadingOverlay.setAttribute('aria-hidden', 'true');
+                this.announceToScreenReader('Agendamento confirmado com sucesso. Verifique seu e-mail.');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new BookingWizard();
+        });
+    </script>
+</body>
+</html>

@@ -10,9 +10,12 @@ Projeto web estático para gestão de manutenção veicular.
 ## Estrutura
 
 - `index.html` → estrutura das telas e componentes
+- `agendar-manutencao.html` → wizard de agendamento de manutenção
 - `js/app.js` → orquestração da aplicação e fluxos de UI
 - `js/store.js` → estado centralizado (store com mutations/commit)
 - `js/api/images.js` e `js/api/google-maps.js` → integrações externas
+- `WEBHOOKS.md` → contrato de webhook e automações pós-agendamento (backend)
+- `backend-webhooks/` → template Node/Express para receber e processar webhooks
 
 ## Como executar
 

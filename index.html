@@ -39,6 +39,12 @@
     </script>
     
     <style>
+        :root {
+            --color-primary: #3b82f6;
+            --color-secondary: #1e293b;
+            --color-accent: #06b6d4;
+        }
+
         /* Animações do usuário */
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -1117,6 +1123,165 @@
         .gradient-bg {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
         }
+
+        .auth-hero {
+            color: #ffffff;
+        }
+
+        .auth-hero-title {
+            font-size: clamp(2rem, 4vw, 3.25rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            animation: auth-hero-fade-up 0.6s ease-out both;
+        }
+
+        .auth-hero-highlight {
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-hero-subtitle {
+            margin-top: 1rem;
+            color: #cbd5e1;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            max-width: 560px;
+            animation: auth-hero-fade-up 0.6s ease-out 0.1s both;
+        }
+
+        .auth-hero-actions {
+            margin-top: 1.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            animation: auth-hero-fade-up 0.6s ease-out 0.2s both;
+        }
+
+        .auth-hero-btn {
+            border: 0;
+            border-radius: 0.85rem;
+            min-height: 48px;
+            padding: 0.75rem 1.1rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .auth-hero-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .auth-hero-btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #ffffff;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35);
+        }
+
+        .auth-hero-btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .auth-hero-trust {
+            margin-top: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            color: #94a3b8;
+            font-size: 0.92rem;
+            animation: auth-hero-fade-up 0.6s ease-out 0.3s both;
+        }
+
+        .auth-hero-avatars {
+            display: flex;
+            align-items: center;
+        }
+
+        .auth-hero-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 9999px;
+            margin-left: -8px;
+            border: 2px solid #0f172a;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .auth-hero-avatar:first-child {
+            margin-left: 0;
+        }
+
+        .auth-hero-avatar.one { background: #2563eb; }
+        .auth-hero-avatar.two { background: #0ea5e9; }
+        .auth-hero-avatar.three { background: #7c3aed; }
+        .auth-hero-avatar.more { background: #1d4ed8; }
+
+        .auth-hero-card {
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 460px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1rem;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            animation: auth-hero-fade-up 0.6s ease-out 0.35s both;
+        }
+
+        .auth-hero-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #dbeafe;
+        }
+
+        .auth-hero-card-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .auth-hero-card-subtitle {
+            display: block;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.15rem;
+        }
+
+        .auth-hero-card-time {
+            font-size: 0.72rem;
+            color: #2563eb;
+            font-weight: 700;
+            margin-left: auto;
+        }
+
+        @keyframes auth-hero-fade-up {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
         
         /* Status indicators */
         .status-dot {
@@ -1152,16 +1317,263 @@
             white-space: nowrap;
             z-index: 100;
         }
+
+        .skip-nav {
+            position: fixed;
+            top: -48px;
+            left: 12px;
+            background: #2563eb;
+            color: #ffffff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            z-index: 120;
+            font-weight: 600;
+            transition: top 0.2s ease;
+        }
+
+        .skip-nav:focus {
+            top: 12px;
+        }
+
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 110;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .site-header.scrolled {
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.22);
+        }
+
+        .site-header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 64px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .brand-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+
+        .header-nav {
+            display: none;
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .nav-list a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .nav-list a:hover,
+        .nav-list a:focus-visible {
+            color: #ffffff;
+        }
+
+        .menu-toggle {
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(84vw, 320px);
+            height: 100vh;
+            background: #0f172a;
+            z-index: 115;
+            transform: translateX(100%);
+            transition: transform 0.25s ease;
+            padding: 78px 18px 24px;
+        }
+
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+
+        .mobile-nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .mobile-nav-list a {
+            display: block;
+            padding: 12px 10px;
+            color: #e2e8f0;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .mobile-nav-list a:hover,
+        .mobile-nav-list a:focus-visible {
+            background: rgba(59, 130, 246, 0.2);
+            color: #ffffff;
+        }
+
+        .mobile-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.45);
+            z-index: 112;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .mobile-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .has-site-header #app {
+            padding-top: 64px;
+        }
+
+        @media (min-width: 1024px) {
+            .header-nav {
+                display: block;
+            }
+
+            .menu-toggle,
+            .mobile-menu,
+            .mobile-overlay {
+                display: none;
+            }
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+<body class="bg-gray-50 text-gray-800 font-sans antialiased has-site-header">
+
+    <a href="#main-content" class="skip-nav">Pular para conteúdo principal</a>
+
+    <header class="site-header" id="siteHeader" role="banner">
+        <div class="site-header-inner">
+            <a class="brand-link" href="./index.html" aria-label="AutoCare Pro - Início">
+                <span class="brand-icon"><i class="fas fa-car"></i></span>
+                <span>AutoCare Pro</span>
+            </a>
+
+            <nav class="header-nav" aria-label="Navegação principal">
+                <ul class="nav-list">
+                    <li><a href="./index.html">Início</a></li>
+                    <li><a href="./agendar-manutencao.html">Agendar</a></li>
+                    <li><a href="./index.html#section-maintenance">Histórico</a></li>
+                    <li><a href="./README.md">Sobre</a></li>
+                    <li><a href="./index.html#section-providers">Contato</a></li>
+                </ul>
+            </nav>
+
+            <button class="menu-toggle" id="mobileMenuToggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobileMenu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <nav class="mobile-menu" id="mobileMenu" aria-label="Navegação mobile" aria-hidden="true">
+        <ul class="mobile-nav-list">
+            <li><a href="./index.html">Início</a></li>
+            <li><a href="./agendar-manutencao.html">Agendar</a></li>
+            <li><a href="./index.html#section-maintenance">Histórico</a></li>
+            <li><a href="./README.md">Sobre</a></li>
+            <li><a href="./index.html#section-providers">Contato</a></li>
+        </ul>
+    </nav>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
 
     <!-- APP CONTAINER -->
-    <div id="app" class="min-h-screen">
+    <div id="app" class="min-h-screen" tabindex="-1">
+        <div id="main-content"></div>
         
         <!-- AUTH SECTION -->
         <div id="auth-section" class="gradient-bg min-h-screen flex items-center justify-center p-4">
-            <div class="w-full max-w-md">
+            <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+                <section class="auth-hero hidden lg:block" role="banner" aria-label="Introdução ao AutoCare">
+                    <h1 class="auth-hero-title">
+                        Nunca mais esqueça a <span class="auth-hero-highlight">revisão do seu carro</span>
+                    </h1>
+                    <p class="auth-hero-subtitle">
+                        O AutoCare lembra você das trocas de óleo, filtros e revisões no tempo certo, sem planilhas complicadas.
+                    </p>
+
+                    <div class="auth-hero-actions">
+                        <button id="btn-hero-register" class="auth-hero-btn auth-hero-btn-primary" type="button">
+                            <span aria-hidden="true">🔔</span>
+                            Criar lembrete grátis
+                        </button>
+                        <button id="btn-hero-demo" class="auth-hero-btn auth-hero-btn-secondary" type="button">
+                            <span aria-hidden="true">▶️</span>
+                            Ver como funciona
+                        </button>
+                    </div>
+
+                    <div class="auth-hero-trust">
+                        <div class="auth-hero-avatars" aria-hidden="true">
+                            <span class="auth-hero-avatar one">MR</span>
+                            <span class="auth-hero-avatar two">JL</span>
+                            <span class="auth-hero-avatar three">AF</span>
+                            <span class="auth-hero-avatar more">+2k</span>
+                        </div>
+                        <p>motoristas já economizam com manutenção em dia</p>
+                    </div>
+
+                    <div class="auth-hero-card" aria-live="polite">
+                        <span class="auth-hero-card-icon" aria-hidden="true">🔧</span>
+                        <div>
+                            <strong class="auth-hero-card-title">Hora da troca de óleo!</strong>
+                            <span class="auth-hero-card-subtitle">Fiat Uno • 45.000 km</span>
+                        </div>
+                        <span class="auth-hero-card-time">Agora</span>
+                    </div>
+                </section>
+
+                <div id="auth-forms-anchor" class="w-full max-w-md justify-self-center lg:justify-self-end">
                 <!-- Logo -->
                 <div class="text-center mb-8 animate-fade-in">
                     <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl mb-4 shadow-2xl shadow-blue-500/30">
@@ -1305,6 +1717,7 @@
                             <i class="fas fa-arrow-left"></i> Voltar para login
                         </button>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -2181,5 +2594,47 @@
     <script src="js/notifications.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/app.js"></script>
+    <script>
+        (function initHeader() {
+            const siteHeader = document.getElementById('siteHeader');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            const menuToggle = document.getElementById('mobileMenuToggle');
+
+            if (!siteHeader || !mobileMenu || !mobileOverlay || !menuToggle) return;
+
+            const setMenuState = (open) => {
+                mobileMenu.classList.toggle('open', open);
+                mobileOverlay.classList.toggle('show', open);
+                menuToggle.setAttribute('aria-expanded', String(open));
+                mobileMenu.setAttribute('aria-hidden', String(!open));
+            };
+
+            const closeMenu = () => setMenuState(false);
+
+            menuToggle.addEventListener('click', () => {
+                const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
+                setMenuState(!isOpen);
+            });
+
+            mobileOverlay.addEventListener('click', closeMenu);
+            mobileMenu.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
+
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') closeMenu();
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) closeMenu();
+            });
+
+            const updateHeaderShadow = () => {
+                siteHeader.classList.toggle('scrolled', window.scrollY > 4);
+            };
+
+            updateHeaderShadow();
+            window.addEventListener('scroll', updateHeaderShadow, { passive: true });
+        })();
+    </script>
 </body>
 </html>

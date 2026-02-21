@@ -36,6 +36,11 @@ const Auth = {
 		document.getElementById('btn-show-login')?.addEventListener('click', () => this.showLogin());
 		document.getElementById('btn-forgot-password')?.addEventListener('click', () => this.showForgot());
 		document.getElementById('btn-back-login')?.addEventListener('click', () => this.showLogin());
+		document.getElementById('btn-hero-register')?.addEventListener('click', () => this.showRegister());
+		document.getElementById('btn-hero-demo')?.addEventListener('click', () => {
+			document.getElementById('auth-forms-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			this.showLogin();
+		});
 
 		this.elements.loginForm?.addEventListener('submit', (event) => this.handleLogin(event));
 		this.elements.registerForm?.addEventListener('submit', (event) => this.handleRegister(event));
