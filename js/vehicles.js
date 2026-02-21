@@ -299,6 +299,15 @@ const Vehicles = {
 
         smartInput.addEventListener('focus', () => render(smartInput.value || ''));
         smartInput.addEventListener('input', Utils.debounce((e) => render(e.target.value), 120));
+        smartInput.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter') return;
+
+            const firstSuggestion = this.smartSuggestionIndex[0];
+            if (!firstSuggestion) return;
+
+            event.preventDefault();
+            this.applySmartSuggestion(firstSuggestion);
+        });
 
         suggestions.addEventListener('click', (event) => {
             const item = event.target.closest('[data-suggestion-index]');
@@ -317,6 +326,27 @@ const Vehicles = {
                 suggestions.classList.add('hidden');
             }
         });
+    },
+
+    normalizeSearchText(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+    },
+
+    getBrandAliases() {
+        return {
+            Volkswagen: ['vw', 'volks', 'volkswagen'],
+            Chevrolet: ['gm', 'chevy', 'chevrolet'],
+            Hyundai: ['hyundai', 'hyndai'],
+            Renault: ['renault'],
+            Toyota: ['toyota'],
+            Honda: ['honda'],
+            Ford: ['ford'],
+            Fiat: ['fiat']
+        };
     },
 
     getRecentVehicles() {
@@ -340,7 +370,7 @@ const Vehicles = {
     },
 
     getSmartSuggestions(query) {
-        const normalizedQuery = (query || '').trim().toLowerCase();
+        const normalizedQuery = this.normalizeSearchText(query);
         const recent = this.getRecentVehicles();
 
         if (!normalizedQuery) {
@@ -352,7 +382,7 @@ const Vehicles = {
 
         const vehicleMatches = AppState.vehicles
             .filter((vehicle) => {
-                const haystack = `${vehicle.brand} ${vehicle.model} ${vehicle.plate}`.toLowerCase();
+                const haystack = this.normalizeSearchText(`${vehicle.brand} ${vehicle.model} ${vehicle.plate}`);
                 return haystack.includes(normalizedQuery);
             })
             .slice(0, 5)
@@ -364,8 +394,13 @@ const Vehicles = {
             }));
 
         const catalogMatches = [];
+        const aliases = this.getBrandAliases();
         Object.entries(this.vehicleDatabase).forEach(([brand, brandData]) => {
-            if (brand.toLowerCase().includes(normalizedQuery)) {
+            const normalizedBrand = this.normalizeSearchText(brand);
+            const brandAliases = aliases[brand] || [];
+            const hasAliasMatch = brandAliases.some((alias) => this.normalizeSearchText(alias).includes(normalizedQuery));
+
+            if (normalizedBrand.includes(normalizedQuery) || hasAliasMatch) {
                 catalogMatches.push({
                     type: 'catalog-brand',
                     brand,
@@ -375,7 +410,8 @@ const Vehicles = {
             }
 
             brandData.models.forEach((model) => {
-                if (`${brand} ${model}`.toLowerCase().includes(normalizedQuery)) {
+                const normalizedBrandModel = this.normalizeSearchText(`${brand} ${model}`);
+                if (normalizedBrandModel.includes(normalizedQuery)) {
                     const yearRange = brandData.years?.[model];
                     catalogMatches.push({
                         type: 'catalog-model',
@@ -387,9 +423,18 @@ const Vehicles = {
             });
         });
 
+        const uniqueCatalogMatches = [];
+        const seenCatalogKeys = new Set();
+        catalogMatches.forEach((item) => {
+            const key = `${item.type}:${item.brand}:${item.model || ''}`;
+            if (seenCatalogKeys.has(key)) return;
+            seenCatalogKeys.add(key);
+            uniqueCatalogMatches.push(item);
+        });
+
         return {
             recent,
-            matches: [...vehicleMatches, ...catalogMatches].slice(0, 8)
+            matches: [...vehicleMatches, ...uniqueCatalogMatches].slice(0, 8)
         };
     },
 
