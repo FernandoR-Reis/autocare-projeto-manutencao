@@ -265,11 +265,25 @@
 
         /* Onboarding progressivo */
         .onboarding-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 1rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 1.25rem;
             padding: 1.5rem;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+            box-shadow: 0 14px 36px rgba(37, 99, 235, 0.26);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .onboarding-card::before {
+            content: '';
+            position: absolute;
+            top: -120px;
+            right: -70px;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.12);
+            pointer-events: none;
         }
 
         .onboarding-header {
@@ -277,6 +291,30 @@
             align-items: center;
             gap: 1rem;
             margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .onboarding-kicker {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+            color: rgba(219, 234, 254, 0.95);
+            margin: 0;
+        }
+
+        .onboarding-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0.2rem 0;
+        }
+
+        .onboarding-text {
+            margin: 0;
+            font-size: 0.86rem;
+            color: rgba(219, 234, 254, 0.95);
         }
 
         .progress-ring {
@@ -294,13 +332,13 @@
 
         .progress-bg {
             fill: none;
-            stroke: #e2e8f0;
+            stroke: rgba(226, 232, 240, 0.45);
             stroke-width: 3.8;
         }
 
         .progress-fill {
             fill: none;
-            stroke: #3b82f6;
+            stroke: #ffffff;
             stroke-width: 3.8;
             stroke-linecap: round;
             transition: stroke-dasharray 0.3s ease;
@@ -314,13 +352,15 @@
             justify-content: center;
             font-size: 0.75rem;
             font-weight: 700;
-            color: #1e293b;
+            color: #ffffff;
         }
 
         .steps-list {
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
+            position: relative;
+            z-index: 1;
         }
 
         .step {
@@ -328,19 +368,19 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.875rem;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(148, 163, 184, 0.32);
             border-radius: 0.75rem;
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .step.done {
             border-color: #86efac;
-            background: #f0fdf4;
+            background: #ecfdf5;
         }
 
         .step.locked {
-            opacity: 0.65;
-            background: #f8fafc;
+            opacity: 0.78;
+            background: rgba(248, 250, 252, 0.9);
         }
 
         .step-icon {

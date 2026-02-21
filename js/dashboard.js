@@ -188,8 +188,9 @@ const Dashboard = {
 						<span class="progress-text">${completed}/${totalSteps}</span>
 					</div>
 					<div>
-						<h3 class="text-lg font-bold text-slate-900">Primeiros passos</h3>
-						<p class="text-sm text-slate-500">Complete as etapas para iniciar o controle da sua manutenção.</p>
+							<p class="onboarding-kicker">Primeiros passos</p>
+							<h3 class="onboarding-title">Organize seus veículos em minutos</h3>
+							<p class="onboarding-text">Complete as etapas para iniciar o controle da sua manutenção sem complicação.</p>
 					</div>
 				</div>
 				<div class="steps-list">
