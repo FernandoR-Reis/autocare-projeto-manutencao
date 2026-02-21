@@ -90,13 +90,14 @@
             top: 0;
             bottom: 0;
             z-index: 50;
-            width: 72px;
-            transition: width 0.3s ease;
+            width: 260px;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
             overflow: hidden;
         }
 
         .sidebar.expanded {
-            width: 260px;
+            transform: translateX(0);
         }
 
         .sidebar-content {
@@ -221,7 +222,7 @@
         
         /* Conteúdo principal ajustado */
         #main-app {
-            --sidebar-offset: 72px;
+            --sidebar-offset: 0px;
         }
 
         #main-app.sidebar-expanded {
@@ -231,41 +232,6 @@
         #main-app .main-content {
             margin-left: var(--sidebar-offset);
             transition: margin-left 0.3s ease;
-        }
-
-        .sidebar:not(.expanded) .sidebar-logo .flex > div:last-child,
-        .sidebar:not(.expanded) .sidebar-btn span,
-        .sidebar:not(.expanded) .sidebar-footer .flex-1,
-        .sidebar:not(.expanded) #btn-logout span {
-            display: none;
-        }
-
-        .sidebar:not(.expanded) .sidebar-btn {
-            justify-content: center;
-            padding: 12px 0;
-            margin: 4px 10px;
-        }
-
-        .sidebar:not(.expanded) .sidebar-btn i {
-            width: auto;
-        }
-
-        .sidebar:not(.expanded) .sidebar-logo {
-            padding: 24px 12px;
-        }
-
-        .sidebar:not(.expanded) .sidebar-logo .flex {
-            justify-content: center;
-        }
-
-        .sidebar:not(.expanded) .sidebar-footer {
-            padding: 20px 12px;
-        }
-
-        .sidebar:not(.expanded) #btn-logout {
-            justify-content: center;
-            padding-left: 0;
-            padding-right: 0;
         }
 
         @media (max-width: 1023px) {
@@ -1360,6 +1326,7 @@
             </div>
 
             <!-- SIDEBAR COLAPSÁVEL -->
+            <div id="sidebar-hover-zone" class="hidden lg:block fixed left-0 top-0 bottom-0 w-2 z-40" aria-hidden="true"></div>
             <div class="sidebar hidden lg:block" id="sidebar">
                 <div class="sidebar-content">
                     <!-- Logo -->
