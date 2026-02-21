@@ -280,6 +280,18 @@ const Auth = {
 		this.updateUserInfo();
 		this.bindLogoutButtons();
 
+		if (window.Vehicles?.init) {
+			window.Vehicles.init();
+		}
+
+		if (window.Maintenance?.init) {
+			window.Maintenance.init();
+		}
+
+		if (window.Providers?.init) {
+			window.Providers.init();
+		}
+
 		Dashboard.init();
 	},
 

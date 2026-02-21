@@ -1366,19 +1366,13 @@
         .onboarding-card--highlight {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             border-radius: 1.5rem;
-            padding: 2.5rem 2rem;
+            padding: 1.5rem 1.25rem;
             text-align: center;
             color: white;
-            box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 10px 24px -8px rgba(59, 130, 246, 0.35);
             position: relative;
             overflow: hidden;
             margin: 1.5rem 0;
-            animation: pulse-glow 3s infinite;
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.4); }
-            50% { box-shadow: 0 25px 50px -5px rgba(59, 130, 246, 0.6); }
         }
 
         .onboarding-card--highlight::before {
@@ -1397,26 +1391,21 @@
             font-size: 4rem;
             margin-bottom: 1rem;
             display: block;
-            animation: bounce-soft 2s infinite;
-        }
-
-        @keyframes bounce-soft {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+            display: none;
         }
 
         .onboarding-card__title {
-            font-size: 1.5rem;
+            font-size: 1.05rem;
             font-weight: 700;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.4rem;
             position: relative;
             z-index: 1;
         }
 
         .onboarding-card__text {
-            font-size: 1.125rem;
+            font-size: 0.9rem;
             opacity: 0.95;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             max-width: 400px;
             margin-left: auto;
             margin-right: auto;
@@ -1429,11 +1418,11 @@
             display: inline-flex;
             align-items: center;
             gap: 0.75rem;
-            padding: 1rem 2rem;
+            padding: 0.75rem 1.25rem;
             background: white;
             color: #1d4ed8;
             font-weight: 700;
-            font-size: 1.125rem;
+            font-size: 0.95rem;
             border: none;
             border-radius: 1rem;
             cursor: pointer;
@@ -1441,17 +1430,11 @@
             transition: all 0.3s ease;
             position: relative;
             z-index: 1;
-            min-height: 56px;
-            animation: btn-pulse 2s infinite;
-        }
-
-        @keyframes btn-pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
+            min-height: 46px;
         }
 
         .btn-pulse:hover {
-            transform: translateY(-2px) scale(1.05);
+            transform: translateY(-1px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
 
@@ -2258,7 +2241,7 @@
                             <div id="vehicle-empty-state">
                             <h3 class="text-lg font-semibold text-gray-800 mb-2">Nenhum veículo cadastrado</h3>
                             <p class="text-gray-500 mb-6">Comece adicionando seu primeiro veículo para acompanhar manutenções e revisões</p>
-                            <button id="btn-empty-add-vehicle" onclick="window.Vehicles?.openModal && Vehicles.openModal()" class="btn-primary bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors font-semibold shadow-lg">
+                            <button id="btn-empty-add-vehicle" onclick="window.Vehicles?.init && Vehicles.init(); window.Vehicles?.openModal && Vehicles.openModal();" class="btn-primary bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors font-semibold shadow-lg">
                                 ➕ Adicionar Veículo
                             </button>
                             </div>

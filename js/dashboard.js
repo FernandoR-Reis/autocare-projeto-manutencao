@@ -124,6 +124,9 @@ const Dashboard = {
 	startOnboardingStep(stepId) {
 		switch (stepId) {
 			case 'add-vehicle':
+				if (window.Vehicles?.init) {
+					window.Vehicles.init();
+				}
 				if (window.Vehicles?.openModal) {
 					window.Vehicles.openModal();
 				}

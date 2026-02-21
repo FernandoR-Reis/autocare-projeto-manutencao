@@ -145,15 +145,6 @@
 
             onboardingCard.classList.add('onboarding-card--highlight');
 
-            const headerTitle = onboardingCard.querySelector('.onboarding-title');
-            if (headerTitle && !onboardingCard.querySelector('.onboarding-card__icon')) {
-                const icon = document.createElement('span');
-                icon.className = 'onboarding-card__icon';
-                icon.setAttribute('aria-hidden', 'true');
-                icon.textContent = '🚗';
-                onboardingCard.insertBefore(icon, onboardingCard.firstChild);
-            }
-
             const firstActionButton = onboardingCard.querySelector('.btn-sm-primary');
             if (firstActionButton) {
                 firstActionButton.classList.add('btn-pulse');
