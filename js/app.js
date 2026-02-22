@@ -427,6 +427,75 @@ window.AppState = Object.assign(window.AppState || {}, {
     },
 });
 
+window.UI = Object.assign(window.UI || {}, {
+    showToast(message, type = 'info') {
+        showToast(message, type);
+    },
+    showModal(title, content) {
+        const existing = document.getElementById('generic-modal');
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'generic-modal';
+        modal.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold">${title}</h3>
+                    <button id="generic-modal-close" class="text-gray-500 hover:text-gray-700"><i class="fas fa-times"></i></button>
+                </div>
+                ${content}
+            </div>
+        `;
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) modal.remove();
+        });
+
+        document.body.appendChild(modal);
+        document.getElementById('generic-modal-close')?.addEventListener('click', () => modal.remove());
+    },
+});
+
+window.Dashboard = Object.assign(window.Dashboard || {}, {
+    updateStats() {
+        updateStats();
+    },
+});
+
+window.Maintenance = Object.assign(window.Maintenance || {}, {
+    init() {
+        renderMaintenances();
+    },
+    checkStatus() {
+        checkMaintenanceStatus();
+    },
+    openModal(vehicleId) {
+        openAddMaintenanceModal(vehicleId);
+    },
+});
+
+window.Notifications = Object.assign(window.Notifications || {}, {
+    init() {
+        renderNotifications();
+    },
+    add(type, title, message, relatedId = null) {
+        addNotification(type, title, message, relatedId);
+    },
+    markAllAsRead() {
+        markAllAsRead();
+    },
+    updateBadge() {
+        updateNotificationBadge();
+    },
+});
+
+window.Navigation = Object.assign(window.Navigation || {}, {
+    showSection(sectionName) {
+        showSection(sectionName);
+    },
+});
+
 function updateDate() {
     const now = new Date();
     const dateStr = now.toLocaleDateString('pt-BR', {
@@ -2219,4 +2288,178 @@ const App = {
     },
 };
 
+const Navigation = {
+    sections: ['dashboard', 'vehicles', 'maintenance', 'providers', 'notifications'],
+    _bound: false,
+
+    init() {
+        if (this._bound) return;
+        this._bound = true;
+
+        const sidebar = document.getElementById('sidebar');
+        const mainApp = document.getElementById('main-app');
+        const sidebarHoverZone = document.getElementById('sidebar-hover-zone');
+
+        if (sidebar) {
+            let closeSidebarTimeout = null;
+
+            const setSidebarExpanded = (isExpanded) => {
+                sidebar.classList.toggle('expanded', isExpanded);
+                mainApp?.classList.toggle('sidebar-expanded', isExpanded);
+            };
+
+            const clearCloseTimeout = () => {
+                if (!closeSidebarTimeout) return;
+                clearTimeout(closeSidebarTimeout);
+                closeSidebarTimeout = null;
+            };
+
+            const scheduleCloseSidebar = () => {
+                clearCloseTimeout();
+                closeSidebarTimeout = setTimeout(() => {
+                    const hoveringSidebar = sidebar.matches(':hover');
+                    const hoveringZone = sidebarHoverZone?.matches(':hover');
+                    if (!hoveringSidebar && !hoveringZone) {
+                        setSidebarExpanded(false);
+                    }
+                }, 80);
+            };
+
+            setSidebarExpanded(false);
+
+            sidebar.addEventListener('mouseenter', () => {
+                if (window.innerWidth < 1024) return;
+                clearCloseTimeout();
+                setSidebarExpanded(true);
+            });
+
+            sidebar.addEventListener('mouseleave', () => {
+                if (window.innerWidth < 1024) return;
+                scheduleCloseSidebar();
+            });
+
+            sidebarHoverZone?.addEventListener('mouseenter', () => {
+                if (window.innerWidth < 1024) return;
+                clearCloseTimeout();
+                setSidebarExpanded(true);
+            });
+
+            sidebarHoverZone?.addEventListener('mouseleave', () => {
+                if (window.innerWidth < 1024) return;
+                scheduleCloseSidebar();
+            });
+        }
+
+        document.querySelectorAll('.sidebar-btn[data-section]').forEach((btn) => {
+            btn.addEventListener('click', (event) => {
+                const section = event.currentTarget.dataset.section;
+                this.showSection(section);
+            });
+        });
+
+        document.querySelectorAll('.btn-navigate').forEach((btn) => {
+            btn.addEventListener('click', (event) => {
+                const section = event.currentTarget.dataset.section;
+                this.showSection(section);
+            });
+        });
+    },
+
+    showSection(sectionName) {
+        if (!this.sections.includes(sectionName)) return;
+
+        AppState.currentSection = sectionName;
+
+        this.sections.forEach((section) => {
+            document.getElementById(`section-${section}`)?.classList.add('hidden');
+            document.querySelector(`.sidebar-btn[data-section="${section}"]`)?.classList.remove('active');
+            document.querySelector(`.mobile-nav-btn[data-section="${section}"]`)?.classList.remove('bg-white/20');
+        });
+
+        document.getElementById(`section-${sectionName}`)?.classList.remove('hidden');
+        document.querySelector(`.sidebar-btn[data-section="${sectionName}"]`)?.classList.add('active');
+        document.querySelector(`.mobile-nav-btn[data-section="${sectionName}"]`)?.classList.add('bg-white/20');
+
+        const titles = {
+            dashboard: 'Dashboard',
+            vehicles: 'Meus Veículos',
+            maintenance: 'Manutenções',
+            providers: 'Prestadores de Serviço',
+            notifications: 'Notificações',
+        };
+        const pageTitle = document.getElementById('page-title');
+        if (pageTitle) pageTitle.textContent = titles[sectionName];
+
+        this.initSection(sectionName);
+    },
+
+    initSection(sectionName) {
+        switch (sectionName) {
+            case 'dashboard': Dashboard.init(); break;
+            case 'vehicles': Vehicles.init(); break;
+            case 'maintenance':
+                if (Maintenance.init) Maintenance.init();
+                break;
+            case 'providers': Providers.init(); break;
+            case 'notifications':
+                if (Notifications.init) Notifications.init();
+                break;
+            default:
+                break;
+        }
+    },
+};
+
+const UIModule = {
+    showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const icon = document.getElementById('toast-icon');
+        const messageElement = document.getElementById('toast-message');
+
+        const icons = {
+            success: 'check-circle text-green-400',
+            error: 'times-circle text-red-400',
+            info: 'info-circle text-blue-400',
+            warning: 'exclamation-triangle text-yellow-400',
+        };
+
+        if (!toast || !icon || !messageElement) return;
+
+        icon.className = `fas ${icons[type]} text-xl`;
+        messageElement.textContent = message;
+
+        toast.classList.add('show');
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    },
+
+    showModal(title, content) {
+        const modalId = `dynamic-modal-${Date.now()}`;
+        const modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-up shadow-2xl">
+                <div class="p-6 border-b-2 border-gray-100 flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-gray-800">${title}</h3>
+                    <button onclick="document.getElementById('${modalId}').remove()" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100">
+                        <i class="fas fa-times text-gray-500"></i>
+                    </button>
+                </div>
+                <div class="p-6">${content}</div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) modal.remove();
+        });
+    },
+};
+
 window.App = App;
+window.Navigation = Navigation;
+window.UI = UIModule;

@@ -1,0 +1,1 @@
+window.Maintenance = window.Maintenance || {};
