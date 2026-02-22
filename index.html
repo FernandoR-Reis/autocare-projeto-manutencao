@@ -97,18 +97,9 @@
             bottom: 0;
             z-index: 50;
             width: 260px;
-            transform: translateX(-220px);
+            transform: translateX(-100%);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             overflow: hidden;
-        }
-
-        .sidebar::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: -20px;
-            width: 20px;
-            height: 100%;
         }
 
         .sidebar.expanded,
@@ -267,9 +258,6 @@
                 transform: translateX(-100%);
             }
 
-            .sidebar::after {
-                display: none;
-            }
         }
         
         /* Glassmorphism */
@@ -1993,7 +1981,7 @@
             </div>
 
             <!-- SIDEBAR COLAPSÁVEL -->
-            <div id="sidebar-hover-zone" class="hidden lg:block fixed left-0 top-0 bottom-0 w-5 z-40" aria-hidden="true"></div>
+            <div id="sidebar-hover-zone" class="hidden lg:block fixed left-0 top-0 bottom-0 w-2 z-40" aria-hidden="true"></div>
             <div class="sidebar hidden lg:block" id="sidebar">
                 <div class="sidebar-content">
                     <!-- Logo -->
