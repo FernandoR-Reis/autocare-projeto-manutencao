@@ -355,7 +355,7 @@ const Dashboard = {
 			}
 
 			return `
-				<div class="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition-all group cursor-pointer" onclick="Vehicles.openUpdateKmModal('${vehicle.id}')">
+				<div class="bg-white rounded-xl p-4 border border-gray-200 hover:shadow-md transition-all group cursor-pointer" data-vehicle-id="${vehicle.id}" onclick="Vehicles.openUpdateKmModal('${vehicle.id}')">
 					<div class="flex items-start gap-4">
 						<div class="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
 							<img src="${imageUrl}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">

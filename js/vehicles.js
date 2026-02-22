@@ -1332,7 +1332,7 @@ const Vehicles = {
 
             if (this.currentView === 'list') {
                 return `
-                    <div class="vehicle-health-card vehicle-card">
+                    <div class="vehicle-health-card vehicle-card" data-vehicle-id="${v.id}">
                         <div class="vehicle-header">
                             <div class="vehicle-photo">
                                 <img src="${imageUrl}" alt="${v.brand} ${v.model}" class="vehicle-image" onerror="this.src='${ImagesAPI.getPlaceholder(400, 300, v.brand)}'">
@@ -1375,7 +1375,7 @@ const Vehicles = {
             }
             
             return `
-                <div class="vehicle-health-card vehicle-card">
+                <div class="vehicle-health-card vehicle-card" data-vehicle-id="${v.id}">
                     <div class="vehicle-header">
                         <div class="vehicle-photo">
                             <img src="${imageUrl}" alt="${v.brand} ${v.model}" class="vehicle-image" onerror="this.src='${ImagesAPI.getPlaceholder(400, 300, v.brand)}'">
