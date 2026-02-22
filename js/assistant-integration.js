@@ -87,7 +87,38 @@ const AssistantIntegration = {
 
         const vehicles = Array.isArray(window.AppState?.vehicles) ? window.AppState.vehicles : [];
         if (!vehicles.length) {
-            wrapper.classList.add('hidden');
+            wrapper.classList.remove('hidden');
+            const statusContainer = document.getElementById('assistant-status-card');
+            const nextContainer = document.getElementById('assistant-next-widget');
+
+            if (statusContainer) {
+                statusContainer.innerHTML = `
+                    <div class="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">Assistente de Manutenção</h3>
+                        <p class="text-sm text-gray-600 mb-4">Cadastre seu primeiro veículo para receber recomendações automáticas.</p>
+                        <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                            Adicionar primeiro veículo
+                        </button>
+                    </div>
+                `;
+
+                const addVehicleButton = statusContainer.querySelector('button');
+                if (addVehicleButton) {
+                    addVehicleButton.onclick = () => {
+                        if (window.Vehicles?.openModal) {
+                            window.Vehicles.openModal();
+                        }
+                    };
+                }
+            }
+
+            if (nextContainer) {
+                nextContainer.innerHTML = `
+                    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-5 h-full flex items-center">
+                        <p class="text-sm text-blue-700 font-medium">Quando você registrar manutenções, o assistente vai destacar prioridades e próximos passos aqui.</p>
+                    </div>
+                `;
+            }
             return;
         }
 
