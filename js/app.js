@@ -2296,62 +2296,7 @@ const Navigation = {
         if (this._bound) return;
         this._bound = true;
 
-        const sidebar = document.getElementById('sidebar');
-        const mainApp = document.getElementById('main-app');
-        const sidebarHoverZone = document.getElementById('sidebar-hover-zone');
-
-        if (sidebar) {
-            let closeSidebarTimeout = null;
-
-            const setSidebarExpanded = (isExpanded) => {
-                sidebar.classList.toggle('expanded', isExpanded);
-                mainApp?.classList.toggle('sidebar-expanded', isExpanded);
-            };
-
-            const clearCloseTimeout = () => {
-                if (!closeSidebarTimeout) return;
-                clearTimeout(closeSidebarTimeout);
-                closeSidebarTimeout = null;
-            };
-
-            const openSidebar = () => {
-                if (window.innerWidth < 1024) return;
-                clearCloseTimeout();
-                setSidebarExpanded(true);
-            };
-
-            const scheduleCloseSidebar = () => {
-                if (window.innerWidth < 1024) return;
-
-                clearCloseTimeout();
-                closeSidebarTimeout = setTimeout(() => {
-                    const hoveringSidebar = sidebar.matches(':hover');
-                    const hoveringZone = sidebarHoverZone?.matches(':hover');
-
-                    if (!hoveringSidebar && !hoveringZone) {
-                        setSidebarExpanded(false);
-                    }
-                }, 180);
-            };
-
-            const syncSidebarVisibility = () => {
-                const isDesktop = window.innerWidth >= 1024;
-                if (isDesktop) {
-                    setSidebarExpanded(false);
-                } else {
-                    setSidebarExpanded(false);
-                }
-            };
-
-            syncSidebarVisibility();
-            window.addEventListener('resize', syncSidebarVisibility);
-
-            sidebar.addEventListener('mouseenter', openSidebar);
-            sidebar.addEventListener('mouseleave', scheduleCloseSidebar);
-
-            sidebarHoverZone?.addEventListener('mouseenter', openSidebar);
-            sidebarHoverZone?.addEventListener('mouseleave', scheduleCloseSidebar);
-        }
+        document.getElementById('main-app')?.classList.remove('sidebar-expanded');
 
         document.querySelectorAll('.sidebar-btn[data-section]').forEach((btn) => {
             btn.addEventListener('click', (event) => {
