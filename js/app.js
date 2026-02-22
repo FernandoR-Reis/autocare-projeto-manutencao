@@ -2299,9 +2299,11 @@ const Navigation = {
         const sidebar = document.getElementById('sidebar');
         const mainApp = document.getElementById('main-app');
         const sidebarHoverZone = document.getElementById('sidebar-hover-zone');
+        const sidebarContent = sidebar?.querySelector('.sidebar-content');
 
         if (sidebar) {
             let closeSidebarTimeout = null;
+            let keepSidebarOpenUntil = 0;
 
             const setSidebarExpanded = (isExpanded) => {
                 sidebar.classList.toggle('expanded', isExpanded);
@@ -2317,12 +2319,14 @@ const Navigation = {
             const scheduleCloseSidebar = () => {
                 clearCloseTimeout();
                 closeSidebarTimeout = setTimeout(() => {
+                    if (Date.now() < keepSidebarOpenUntil) return;
                     const hoveringSidebar = sidebar.matches(':hover');
                     const hoveringZone = sidebarHoverZone?.matches(':hover');
-                    if (!hoveringSidebar && !hoveringZone) {
+                    const hoveringContent = sidebarContent?.matches(':hover');
+                    if (!hoveringSidebar && !hoveringZone && !hoveringContent) {
                         setSidebarExpanded(false);
                     }
-                }, 100);
+                }, 220);
             };
 
             const syncSidebarVisibility = () => {
@@ -2358,6 +2362,24 @@ const Navigation = {
                 if (window.innerWidth < 1024) return;
                 scheduleCloseSidebar();
             });
+
+            sidebarContent?.addEventListener('mouseenter', () => {
+                if (window.innerWidth < 1024) return;
+                clearCloseTimeout();
+                setSidebarExpanded(true);
+            });
+
+            sidebarContent?.addEventListener('mouseleave', () => {
+                if (window.innerWidth < 1024) return;
+                scheduleCloseSidebar();
+            });
+
+            sidebarContent?.addEventListener('wheel', () => {
+                if (window.innerWidth < 1024) return;
+                keepSidebarOpenUntil = Date.now() + 900;
+                clearCloseTimeout();
+                setSidebarExpanded(true);
+            }, { passive: true });
         }
 
         document.querySelectorAll('.sidebar-btn[data-section]').forEach((btn) => {
