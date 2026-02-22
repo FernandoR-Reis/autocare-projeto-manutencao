@@ -287,10 +287,20 @@ const Vehicles = {
     },
 
     bindSmartSearch() {
-        const smartInput = document.getElementById('vehicle-smart-search');
-        const suggestions = document.getElementById('vehicle-smart-suggestions');
+        const currentSmartInput = document.getElementById('vehicle-smart-search');
+        const currentSuggestions = document.getElementById('vehicle-smart-suggestions');
 
-        if (!smartInput || !suggestions) return;
+        if (!currentSmartInput || !currentSuggestions) return;
+
+        const smartInput = currentSmartInput.cloneNode(true);
+        currentSmartInput.parentNode.replaceChild(smartInput, currentSmartInput);
+
+        const suggestions = currentSuggestions.cloneNode(false);
+        currentSuggestions.parentNode.replaceChild(suggestions, currentSuggestions);
+
+        if (this.smartSearchOutsideHandler) {
+            document.removeEventListener('click', this.smartSearchOutsideHandler);
+        }
 
         const render = (query = '') => {
             const data = this.getSmartSuggestions(query);
@@ -320,12 +330,14 @@ const Vehicles = {
             this.applySmartSuggestion(suggestion);
         });
 
-        document.addEventListener('click', (event) => {
+        this.smartSearchOutsideHandler = (event) => {
             const targetInside = smartInput.contains(event.target) || suggestions.contains(event.target);
             if (!targetInside) {
                 suggestions.classList.add('hidden');
             }
-        });
+        };
+
+        document.addEventListener('click', this.smartSearchOutsideHandler);
     },
 
     normalizeSearchText(value) {
@@ -715,6 +727,8 @@ const Vehicles = {
             smartSuggestions.innerHTML = '';
             smartSuggestions.classList.add('hidden');
         }
+
+        this.bindSmartSearch();
         
         const preview = document.getElementById('vehicle-image-preview');
         if (preview) {
@@ -1447,3 +1461,16 @@ window.vehicleDatabase = Vehicles.vehicleDatabase;
 window.detectVehicleByPlate = (plate) => Vehicles.detectVehicleByPlate(plate);
 window.openMobileActionSheet = (vehicleId) => Vehicles.openMobileActionSheet(vehicleId);
 window.closeSheet = () => Vehicles.closeMobileActionSheet();
+window.openVehicleModal = () => {
+    if (window.Vehicles?.init) {
+        window.Vehicles.init();
+    }
+    window.Vehicles?.openModal?.();
+};
+window.closeVehicleModal = () => window.Vehicles?.handleCancel?.();
+window.saveVehicle = () => {
+    const form = document.getElementById('form-add-vehicle');
+    if (!form) return;
+    const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+    form.dispatchEvent(submitEvent);
+};
