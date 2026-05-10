@@ -271,6 +271,12 @@ const Dashboard = {
 		if (statOverdue) statOverdue.textContent = stats.overdue;
 		if (statVehicles) statVehicles.textContent = AppState.vehicles.length;
 
+		// Highlight overdue stat card when there are overdue items
+		const overdueCard = document.querySelector('.stat-overdue-card');
+		if (overdueCard) {
+			overdueCard.classList.toggle('has-overdue', stats.overdue > 0);
+		}
+
 		Notifications.updateBadge();
 	},
 
@@ -291,7 +297,7 @@ const Dashboard = {
 				<div class="today-focus today-focus-ok">
 					<div class="today-focus-header">
 						<div>
-							<p class="today-focus-label" style="color:#15803d;">✓ Situação atual</p>
+							<p class="today-focus-label today-focus-label--ok">✓ Situação atual</p>
 							<h3 class="today-focus-title">Tudo em ordem por hoje! 🎉</h3>
 						</div>
 					</div>
@@ -311,18 +317,20 @@ const Dashboard = {
 
 		const hasUrgent = overdue.length > 0;
 		const focusClass = hasUrgent ? 'today-focus-urgent' : 'today-focus-warning';
-		const labelColor = hasUrgent ? '#dc2626' : '#d97706';
+		const labelClass = hasUrgent ? 'today-focus-label--urgent' : 'today-focus-label--warning';
 		const labelText = hasUrgent ? '⚠️ Ação necessária' : '📅 Atenção';
-		const titleText = hasUrgent
-			? `Você tem ${overdue.length} manutenção${overdue.length > 1 ? 'ões' : ''} vencida${overdue.length > 1 ? 's' : ''}`
-			: `${warning.length} manutenção${warning.length > 1 ? 'ões' : ''} próxima${warning.length > 1 ? 's' : ''} do prazo`;
 
-		const itemsToShow = hasUrgent
-			? overdue.slice(0, 3)
-			: warning.slice(0, 3);
+		const pluralMaint = (count) => count === 1 ? 'manutenção' : 'manutenções';
+		const titleText = hasUrgent
+			? `Você tem ${overdue.length} ${pluralMaint(overdue.length)} vencida${overdue.length > 1 ? 's' : ''}`
+			: `${warning.length} ${pluralMaint(warning.length)} próxima${warning.length > 1 ? 's' : ''} do prazo`;
+
+		const itemsToShow = hasUrgent ? overdue.slice(0, 3) : warning.slice(0, 3);
+
+		const vehicleMap = new Map(AppState.vehicles.map((v) => [String(v.id), v]));
 
 		const itemsHtml = itemsToShow.map((m) => {
-			const vehicle = AppState.vehicles.find((v) => String(v.id) === String(m.vehicleId));
+			const vehicle = vehicleMap.get(String(m.vehicleId));
 			const badgeClass = m.status === 'overdue' ? 'badge-overdue' : 'badge-warning';
 			const badgeText = m.status === 'overdue' ? 'Vencida' : 'Próxima';
 			const typeIcons = {
@@ -345,11 +353,12 @@ const Dashboard = {
 
 		const moreOverdue = overdue.length > 3 ? overdue.length - 3 : 0;
 		const moreWarning = !hasUrgent && warning.length > 3 ? warning.length - 3 : 0;
-		const moreText = moreOverdue > 0
-			? `<div class="today-focus-item" style="justify-content:center;background:rgba(220,38,38,0.08)"><span style="color:#dc2626;font-size:0.8rem;font-weight:700">+${moreOverdue} mais vencida${moreOverdue > 1 ? 's' : ''}</span></div>`
-			: moreWarning > 0
-				? `<div class="today-focus-item" style="justify-content:center;background:rgba(217,119,6,0.08)"><span style="color:#d97706;font-size:0.8rem;font-weight:700">+${moreWarning} mais próxima${moreWarning > 1 ? 's' : ''}</span></div>`
-				: '';
+		let moreText = '';
+		if (moreOverdue > 0) {
+			moreText = `<div class="today-focus-item today-focus-item--more-urgent"><span>+${moreOverdue} mais vencida${moreOverdue > 1 ? 's' : ''}</span></div>`;
+		} else if (moreWarning > 0) {
+			moreText = `<div class="today-focus-item today-focus-item--more-warning"><span>+${moreWarning} mais próxima${moreWarning > 1 ? 's' : ''}</span></div>`;
+		}
 
 		const ctaClass = hasUrgent ? 'primary' : 'warning';
 
@@ -357,7 +366,7 @@ const Dashboard = {
 			<div class="today-focus ${focusClass}">
 				<div class="today-focus-header">
 					<div>
-						<p class="today-focus-label" style="color:${labelColor};">${labelText}</p>
+						<p class="today-focus-label ${labelClass}">${labelText}</p>
 						<h3 class="today-focus-title">${titleText}</h3>
 					</div>
 				</div>

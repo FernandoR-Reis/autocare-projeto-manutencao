@@ -1807,6 +1807,10 @@
             letter-spacing: 0.1em;
         }
 
+        .today-focus-label--ok { color: #15803d; }
+        .today-focus-label--urgent { color: #dc2626; }
+        .today-focus-label--warning { color: #d97706; }
+
         .today-focus-title {
             font-size: 1.05rem;
             font-weight: 800;
@@ -1919,6 +1923,22 @@
             color: #374151;
         }
 
+        .today-focus-item--more-urgent {
+            justify-content: center;
+            background: rgba(220, 38, 38, 0.08);
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        .today-focus-item--more-warning {
+            justify-content: center;
+            background: rgba(217, 119, 6, 0.08);
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #d97706;
+        }
+
         /* View toggle dark (for the garage header) */
         .view-toggle-dark {
             display: flex;
@@ -1946,8 +1966,8 @@
             color: #ffffff;
         }
 
-        /* Stat card hover effect with urgency */
-        .stat-overdue-card:has(#stat-overdue:not(:empty)[data-nonzero]) {
+        /* Stat card with urgency pulse when there are overdue maintenances */
+        .stat-overdue-card.has-overdue {
             animation: pulse-border 2.5s infinite;
         }
 
@@ -2451,11 +2471,11 @@
                                 </button>
                             </div>
                             <div class="flex items-center gap-3 mt-4">
-                                <div class="flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2">
-                                    <select id="vehicle-filter" class="bg-transparent text-white text-sm font-medium outline-none cursor-pointer">
-                                        <option value="all" class="text-gray-800">Todos os veículos</option>
-                                        <option value="active" class="text-gray-800">Ativos</option>
-                                        <option value="maintenance" class="text-gray-800">Em manutenção</option>
+                                <div class="flex items-center gap-2 bg-white/10 rounded-xl px-1 py-1">
+                                    <select id="vehicle-filter" class="bg-slate-800 text-white text-sm font-medium outline-none cursor-pointer rounded-lg px-3 py-1.5 border border-white/20">
+                                        <option value="all">Todos os veículos</option>
+                                        <option value="active">Ativos</option>
+                                        <option value="maintenance">Em manutenção</option>
                                     </select>
                                 </div>
                                 <div class="view-toggle-dark" role="group" aria-label="Alternar visualização">
