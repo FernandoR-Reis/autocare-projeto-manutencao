@@ -14,6 +14,7 @@ const Dashboard = {
 		}
 
 		this.updateStats();
+		this.renderTodayFocus();
 		this.renderNextMaintenances();
 		this.renderVehiclesOverview();
 		this.renderOnboarding();
@@ -271,6 +272,109 @@ const Dashboard = {
 		if (statVehicles) statVehicles.textContent = AppState.vehicles.length;
 
 		Notifications.updateBadge();
+	},
+
+	renderTodayFocus() {
+		const container = document.getElementById('dashboard-today-focus');
+		if (!container) return;
+
+		if (!AppState.vehicles.length) {
+			container.innerHTML = '';
+			return;
+		}
+
+		const overdue = AppState.maintenances.filter((m) => m.status === 'overdue');
+		const warning = AppState.maintenances.filter((m) => m.status === 'warning');
+
+		if (overdue.length === 0 && warning.length === 0) {
+			container.innerHTML = `
+				<div class="today-focus today-focus-ok">
+					<div class="today-focus-header">
+						<div>
+							<p class="today-focus-label" style="color:#15803d;">✓ Situação atual</p>
+							<h3 class="today-focus-title">Tudo em ordem por hoje! 🎉</h3>
+						</div>
+					</div>
+					<div class="today-focus-body">
+						<div class="today-focus-item">
+							<div class="today-focus-item-icon">🚗</div>
+							<div class="today-focus-item-content">
+								<div class="today-focus-item-name">Nenhuma manutenção urgente</div>
+								<div class="today-focus-item-sub">Seus veículos estão com manutenção em dia. Continue assim!</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+			return;
+		}
+
+		const hasUrgent = overdue.length > 0;
+		const focusClass = hasUrgent ? 'today-focus-urgent' : 'today-focus-warning';
+		const labelColor = hasUrgent ? '#dc2626' : '#d97706';
+		const labelText = hasUrgent ? '⚠️ Ação necessária' : '📅 Atenção';
+		const titleText = hasUrgent
+			? `Você tem ${overdue.length} manutenção${overdue.length > 1 ? 'ões' : ''} vencida${overdue.length > 1 ? 's' : ''}`
+			: `${warning.length} manutenção${warning.length > 1 ? 'ões' : ''} próxima${warning.length > 1 ? 's' : ''} do prazo`;
+
+		const itemsToShow = hasUrgent
+			? overdue.slice(0, 3)
+			: warning.slice(0, 3);
+
+		const itemsHtml = itemsToShow.map((m) => {
+			const vehicle = AppState.vehicles.find((v) => String(v.id) === String(m.vehicleId));
+			const badgeClass = m.status === 'overdue' ? 'badge-overdue' : 'badge-warning';
+			const badgeText = m.status === 'overdue' ? 'Vencida' : 'Próxima';
+			const typeIcons = {
+				oil: '🛢️', filter: '🔧', tires: '🔄', brake: '🚨',
+				battery: '🔋', belt: '⚙️', coolant: '💧', inspection: '📋',
+			};
+			const icon = typeIcons[m.type] || '🔧';
+
+			return `
+				<div class="today-focus-item">
+					<div class="today-focus-item-icon">${icon}</div>
+					<div class="today-focus-item-content">
+						<div class="today-focus-item-name">${m.name || m.type}</div>
+						<div class="today-focus-item-sub">${vehicle ? (vehicle.nickname || vehicle.model) : 'Veículo'} • ${Utils.formatDate(m.nextDate)}</div>
+					</div>
+					<span class="today-focus-badge ${badgeClass}">${badgeText}</span>
+				</div>
+			`;
+		}).join('');
+
+		const moreOverdue = overdue.length > 3 ? overdue.length - 3 : 0;
+		const moreWarning = !hasUrgent && warning.length > 3 ? warning.length - 3 : 0;
+		const moreText = moreOverdue > 0
+			? `<div class="today-focus-item" style="justify-content:center;background:rgba(220,38,38,0.08)"><span style="color:#dc2626;font-size:0.8rem;font-weight:700">+${moreOverdue} mais vencida${moreOverdue > 1 ? 's' : ''}</span></div>`
+			: moreWarning > 0
+				? `<div class="today-focus-item" style="justify-content:center;background:rgba(217,119,6,0.08)"><span style="color:#d97706;font-size:0.8rem;font-weight:700">+${moreWarning} mais próxima${moreWarning > 1 ? 's' : ''}</span></div>`
+				: '';
+
+		const ctaClass = hasUrgent ? 'primary' : 'warning';
+
+		container.innerHTML = `
+			<div class="today-focus ${focusClass}">
+				<div class="today-focus-header">
+					<div>
+						<p class="today-focus-label" style="color:${labelColor};">${labelText}</p>
+						<h3 class="today-focus-title">${titleText}</h3>
+					</div>
+				</div>
+				<div class="today-focus-body">
+					${itemsHtml}
+					${moreText}
+				</div>
+				<div class="today-focus-cta">
+					<button class="today-focus-cta-btn ${ctaClass}" onclick="Navigation.showSection('maintenance')">
+						<i class="fas fa-wrench"></i> Ver manutenções
+					</button>
+					<button class="today-focus-cta-btn secondary" onclick="Navigation.showSection('vehicles')">
+						<i class="fas fa-car-side"></i> Ver garagem
+					</button>
+				</div>
+			</div>
+		`;
 	},
 
 	renderNextMaintenances() {

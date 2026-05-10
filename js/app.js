@@ -662,11 +662,11 @@ function showSection(sectionName) {
     });
 
     const titles = {
-        dashboard: 'Dashboard',
-        vehicles: 'Meus Veículos',
+        dashboard: 'Início',
+        vehicles: 'Garagem',
         maintenance: 'Manutenções',
-        providers: 'Prestadores de Serviço',
-        notifications: 'Notificações',
+        providers: 'Oficinas',
+        notifications: 'Alertas',
     };
 
     state.currentSection = sectionName;
@@ -724,6 +724,9 @@ function toggleMobileMenu() {
 
 function updateDashboard() {
     updateStats();
+    if (window.Dashboard?.renderTodayFocus) {
+        window.Dashboard.renderTodayFocus();
+    }
     renderNextMaintenances();
     renderVehiclesOverview();
 }

@@ -1350,9 +1350,13 @@ const Vehicles = {
                         </div>
 
                         <div class="quick-actions">
-                            <button class="action-btn" onclick="Maintenance.openModal('${v.id}')">
+                            <button class="action-btn" onclick="Vehicles.openUpdateKmModal('${v.id}')">
+                                <span>📍</span>
+                                Atualizar km
+                            </button>
+                            <button class="action-btn secondary" onclick="Maintenance.openModal('${v.id}')">
                                 <span>➕</span>
-                                Registrar troca
+                                Manutenção
                             </button>
                             <button class="action-btn secondary" onclick="Vehicles.viewHistory('${v.id}')">
                                 <span>📋</span>
@@ -1420,9 +1424,13 @@ const Vehicles = {
                     </div>
 
                     <div class="quick-actions">
-                        <button class="action-btn" onclick="Maintenance.openModal('${v.id}')">
+                        <button class="action-btn" onclick="Vehicles.openUpdateKmModal('${v.id}')">
+                            <span>📍</span>
+                            Atualizar km
+                        </button>
+                        <button class="action-btn secondary" onclick="Maintenance.openModal('${v.id}')">
                             <span>➕</span>
-                            Registrar troca
+                            Manutenção
                         </button>
                         <button class="action-btn secondary" onclick="Vehicles.viewHistory('${v.id}')">
                             <span>📋</span>

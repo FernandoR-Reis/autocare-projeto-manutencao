@@ -1007,23 +1007,25 @@
 
         .quick-actions {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             margin-top: 2px;
+            flex-wrap: wrap;
         }
 
         .action-btn {
             flex: 1;
+            min-width: 80px;
             border: none;
             border-radius: 10px;
-            padding: 9px 10px;
-            font-size: 12px;
+            padding: 8px 8px;
+            font-size: 11px;
             font-weight: 700;
             background: #2563eb;
             color: #ffffff;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 5px;
             transition: all 0.2s ease;
         }
 
@@ -1765,6 +1767,200 @@
             100% { background-position: -200% 0; }
         }
 
+        /* ============================================
+           SPRINT 1 - UX / Dashboard / Garagem
+           ============================================ */
+
+        /* "O que fazer hoje" – Today Focus Block */
+        .today-focus {
+            border-radius: 1.25rem;
+            overflow: hidden;
+        }
+
+        .today-focus-urgent {
+            background: linear-gradient(135deg, #fee2e2 0%, #fef2f2 100%);
+            border: 2px solid #fca5a5;
+        }
+
+        .today-focus-warning {
+            background: linear-gradient(135deg, #fef9c3 0%, #fffbeb 100%);
+            border: 2px solid #fde047;
+        }
+
+        .today-focus-ok {
+            background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+            border: 2px solid #86efac;
+        }
+
+        .today-focus-header {
+            padding: 1rem 1.25rem 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .today-focus-label {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .today-focus-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .today-focus-body {
+            padding: 0 1.25rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .today-focus-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(255, 255, 255, 0.75);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+
+        .today-focus-item-icon {
+            font-size: 1.1rem;
+            width: 28px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .today-focus-item-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .today-focus-item-name {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .today-focus-item-sub {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .today-focus-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            flex-shrink: 0;
+        }
+
+        .badge-overdue {
+            background: #dc2626;
+            color: #ffffff;
+        }
+
+        .badge-warning {
+            background: #d97706;
+            color: #ffffff;
+        }
+
+        .today-focus-cta {
+            padding: 0.5rem 1.25rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .today-focus-cta-btn {
+            border: none;
+            border-radius: 0.75rem;
+            padding: 0.6rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .today-focus-cta-btn.primary {
+            background: #dc2626;
+            color: white;
+        }
+
+        .today-focus-cta-btn.primary:hover {
+            background: #b91c1c;
+        }
+
+        .today-focus-cta-btn.warning {
+            background: #d97706;
+            color: white;
+        }
+
+        .today-focus-cta-btn.warning:hover {
+            background: #b45309;
+        }
+
+        .today-focus-cta-btn.secondary {
+            background: rgba(0,0,0,0.06);
+            color: #374151;
+        }
+
+        /* View toggle dark (for the garage header) */
+        .view-toggle-dark {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3px;
+            border-radius: 10px;
+            width: fit-content;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .view-toggle-dark button {
+            padding: 6px 14px;
+            border-radius: 7px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: rgba(255,255,255,0.7);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .view-toggle-dark button.active {
+            background: rgba(255,255,255,0.2);
+            color: #ffffff;
+        }
+
+        /* Stat card hover effect with urgency */
+        .stat-overdue-card:has(#stat-overdue:not(:empty)[data-nonzero]) {
+            animation: pulse-border 2.5s infinite;
+        }
+
+        /* Section heading style */
+        .section-heading {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94a3b8;
+            margin-bottom: 0.75rem;
+        }
+
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased">
@@ -2001,13 +2197,13 @@
                     <nav class="flex-1 py-6 space-y-2 overflow-y-auto">
                         <button data-section="dashboard" class="sidebar-btn active w-full text-left">
                             <i class="fas fa-home"></i>
-                            <span class="font-medium">Dashboard</span>
+                            <span class="font-medium">Início</span>
                             <span class="sidebar-badge hidden" id="badge-dashboard">!</span>
                         </button>
                         
                         <button data-section="vehicles" class="sidebar-btn w-full text-left">
                             <i class="fas fa-car-side"></i>
-                            <span class="font-medium">Meus Veículos</span>
+                            <span class="font-medium">Garagem</span>
                         </button>
                         
                         <button data-section="maintenance" class="sidebar-btn w-full text-left">
@@ -2018,13 +2214,13 @@
                         
                         <button data-section="providers" class="sidebar-btn w-full text-left">
                             <i class="fas fa-map-marker-alt"></i>
-                            <span class="font-medium">Prestadores</span>
+                            <span class="font-medium">Oficinas</span>
                             <span class="sidebar-badge green">Novo</span>
                         </button>
                         
                         <button data-section="notifications" class="sidebar-btn w-full text-left">
                             <i class="fas fa-bell"></i>
-                            <span class="font-medium">Notificações</span>
+                            <span class="font-medium">Alertas</span>
                             <span class="sidebar-badge hidden" id="badge-notifications">0</span>
                         </button>
                     </nav>
@@ -2065,19 +2261,19 @@
                     </div>
                     <nav class="p-4 space-y-2">
                         <button data-section="dashboard" class="mobile-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white hover:bg-white/10 transition-colors">
-                            <i class="fas fa-home w-6"></i> Dashboard
+                            <i class="fas fa-home w-6"></i> Início
                         </button>
                         <button data-section="vehicles" class="mobile-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white hover:bg-white/10 transition-colors">
-                            <i class="fas fa-car-side w-6"></i> Meus Veículos
+                            <i class="fas fa-car-side w-6"></i> Garagem
                         </button>
                         <button data-section="maintenance" class="mobile-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white hover:bg-white/10 transition-colors">
                             <i class="fas fa-wrench w-6"></i> Manutenções
                         </button>
                         <button data-section="providers" class="mobile-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white hover:bg-white/10 transition-colors">
-                            <i class="fas fa-map-marker-alt w-6"></i> Prestadores
+                            <i class="fas fa-map-marker-alt w-6"></i> Oficinas
                         </button>
                         <button data-section="notifications" class="mobile-nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-white hover:bg-white/10 transition-colors">
-                            <i class="fas fa-bell w-6"></i> Notificações
+                            <i class="fas fa-bell w-6"></i> Alertas
                         </button>
                     </nav>
                 </div>
@@ -2106,50 +2302,55 @@
                     <div id="section-dashboard" class="space-y-6 animate-fade-in">
                         
                         <!-- Stats Cards -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card-hover">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="w-14 h-14 bg-gradient-to-br from-green-100 to-green-200 rounded-2xl flex items-center justify-center">
-                                        <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 card-hover cursor-pointer" onclick="Navigation.showSection('maintenance')">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
                                     </div>
-                                    <span class="text-xs font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">Em dia</span>
+                                    <span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-full border border-green-200">Em dia</span>
                                 </div>
-                                <h3 id="stat-ok" class="text-4xl font-bold text-gray-800">0</h3>
-                                <p class="text-sm text-gray-500 mt-1">Manutenções em dia</p>
+                                <h3 id="stat-ok" class="text-3xl font-bold text-gray-800">0</h3>
+                                <p class="text-xs text-gray-500 mt-1">Manutenções em dia</p>
                             </div>
 
-                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card-hover">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="w-14 h-14 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-2xl flex items-center justify-center">
-                                        <i class="fas fa-exclamation-triangle text-yellow-600 text-2xl"></i>
+                            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 card-hover cursor-pointer" onclick="Navigation.showSection('maintenance')">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-exclamation-triangle text-yellow-600 text-xl"></i>
                                     </div>
-                                    <span class="text-xs font-bold text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full">Atenção</span>
+                                    <span class="text-xs font-bold text-yellow-600 bg-yellow-50 px-2.5 py-1 rounded-full border border-yellow-200">Atenção</span>
                                 </div>
-                                <h3 id="stat-warning" class="text-4xl font-bold text-gray-800">0</h3>
-                                <p class="text-sm text-gray-500 mt-1">Próximas do vencimento</p>
+                                <h3 id="stat-warning" class="text-3xl font-bold text-gray-800">0</h3>
+                                <p class="text-xs text-gray-500 mt-1">Próximas do prazo</p>
                             </div>
 
-                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card-hover">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="w-14 h-14 bg-gradient-to-br from-red-100 to-red-200 rounded-2xl flex items-center justify-center">
-                                        <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+                            <div class="bg-white rounded-2xl p-5 shadow-sm border border-red-100 card-hover cursor-pointer stat-overdue-card" onclick="Navigation.showSection('maintenance')">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-times-circle text-red-600 text-xl"></i>
                                     </div>
-                                    <span class="text-xs font-bold text-red-600 bg-red-100 px-3 py-1 rounded-full">Urgente</span>
+                                    <span class="text-xs font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-full border border-red-200">Urgente</span>
                                 </div>
-                                <h3 id="stat-overdue" class="text-4xl font-bold text-gray-800">0</h3>
-                                <p class="text-sm text-gray-500 mt-1">Manutenções vencidas</p>
+                                <h3 id="stat-overdue" class="text-3xl font-bold text-red-600">0</h3>
+                                <p class="text-xs text-gray-500 mt-1">Manutenções vencidas</p>
                             </div>
 
-                            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 card-hover">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center">
-                                        <i class="fas fa-car text-blue-600 text-2xl"></i>
+                            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 card-hover cursor-pointer" onclick="Navigation.showSection('vehicles')">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-car text-blue-600 text-xl"></i>
                                     </div>
-                                    <span class="text-xs font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">Total</span>
+                                    <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">Garagem</span>
                                 </div>
-                                <h3 id="stat-vehicles" class="text-4xl font-bold text-gray-800">0</h3>
-                                <p class="text-sm text-gray-500 mt-1">Veículos cadastrados</p>
+                                <h3 id="stat-vehicles" class="text-3xl font-bold text-gray-800">0</h3>
+                                <p class="text-xs text-gray-500 mt-1">Veículos cadastrados</p>
                             </div>
+                        </div>
+
+                        <!-- O que fazer hoje -->
+                        <div id="dashboard-today-focus">
+                            <!-- Rendered by Dashboard.renderTodayFocus() -->
                         </div>
 
                         <div id="dashboard-onboarding" class="hidden"></div>
@@ -2158,37 +2359,37 @@
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <!-- Quick Actions -->
                             <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                                <h3 class="font-bold text-lg mb-4 flex items-center gap-2 text-gray-800">
+                                <h3 class="font-bold text-base mb-4 flex items-center gap-2 text-gray-700 uppercase tracking-wide text-xs">
                                     <i class="fas fa-bolt text-yellow-500"></i>
                                     Ações Rápidas
                                 </h3>
                                 <div class="space-y-3">
-                                    <button id="btn-quick-add-vehicle" class="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-blue-500 hover:bg-blue-50 transition-all group">
-                                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                                            <i class="fas fa-plus text-blue-600 text-xl"></i>
+                                    <button id="btn-quick-add-vehicle" class="w-full flex items-center gap-3 p-3.5 rounded-xl border-2 border-gray-100 hover:border-blue-400 hover:bg-blue-50 transition-all group">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
+                                            <i class="fas fa-plus text-blue-600"></i>
                                         </div>
                                         <div class="text-left">
-                                            <p class="font-semibold text-gray-800">Adicionar Veículo</p>
-                                            <p class="text-xs text-gray-500">Cadastrar novo veículo</p>
+                                            <p class="font-semibold text-gray-800 text-sm">Adicionar Veículo</p>
+                                            <p class="text-xs text-gray-500">Cadastrar na garagem</p>
                                         </div>
                                     </button>
                                     
-                                    <button id="btn-quick-add-maintenance" class="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-green-500 hover:bg-green-50 transition-all group">
-                                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                                            <i class="fas fa-wrench text-green-600 text-xl"></i>
+                                    <button id="btn-quick-add-maintenance" class="w-full flex items-center gap-3 p-3.5 rounded-xl border-2 border-gray-100 hover:border-green-400 hover:bg-green-50 transition-all group">
+                                        <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors flex-shrink-0">
+                                            <i class="fas fa-wrench text-green-600"></i>
                                         </div>
                                         <div class="text-left">
-                                            <p class="font-semibold text-gray-800">Nova Manutenção</p>
+                                            <p class="font-semibold text-gray-800 text-sm">Nova Manutenção</p>
                                             <p class="text-xs text-gray-500">Registrar serviço</p>
                                         </div>
                                     </button>
                                     
-                                    <button id="btn-quick-providers" class="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-gray-100 hover:border-purple-500 hover:bg-purple-50 transition-all group">
-                                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                                            <i class="fas fa-search text-purple-600 text-xl"></i>
+                                    <button id="btn-quick-providers" class="w-full flex items-center gap-3 p-3.5 rounded-xl border-2 border-gray-100 hover:border-purple-400 hover:bg-purple-50 transition-all group">
+                                        <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-colors flex-shrink-0">
+                                            <i class="fas fa-map-marker-alt text-purple-600"></i>
                                         </div>
                                         <div class="text-left">
-                                            <p class="font-semibold text-gray-800">Encontrar Prestador</p>
+                                            <p class="font-semibold text-gray-800 text-sm">Encontrar Oficina</p>
                                             <p class="text-xs text-gray-500">Mecânicas próximas</p>
                                         </div>
                                     </button>
@@ -2198,12 +2399,15 @@
                             <!-- Next Maintenances -->
                             <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                                 <div class="flex items-center justify-between mb-4">
-                                    <h3 class="font-bold text-lg flex items-center gap-2 text-gray-800">
-                                        <i class="fas fa-clock text-blue-500"></i>
-                                        Próximas Manutenções
-                                    </h3>
-                                    <button data-section="maintenance" class="btn-navigate text-sm text-blue-600 hover:text-blue-700 font-semibold">
-                                        Ver todas <i class="fas fa-arrow-right ml-1"></i>
+                                    <div>
+                                        <h3 class="font-bold text-base text-gray-800 flex items-center gap-2">
+                                            <i class="fas fa-calendar-check text-blue-500"></i>
+                                            Próximas Manutenções
+                                        </h3>
+                                        <p class="text-xs text-gray-500 mt-0.5">Itens que merecem atenção em breve</p>
+                                    </div>
+                                    <button data-section="maintenance" class="btn-navigate text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">
+                                        Ver todas <i class="fas fa-arrow-right text-xs"></i>
                                     </button>
                                 </div>
                                 <div id="next-maintenances-list" class="space-y-3">
@@ -2214,10 +2418,18 @@
 
                         <!-- Vehicle Overview -->
                         <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                            <h3 class="font-bold text-lg mb-4 flex items-center gap-2 text-gray-800">
-                                <i class="fas fa-car text-blue-500"></i>
-                                Resumo dos Veículos
-                            </h3>
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="font-bold text-base text-gray-800 flex items-center gap-2">
+                                        <i class="fas fa-car-side text-blue-500"></i>
+                                        Minha Garagem
+                                    </h3>
+                                    <p class="text-xs text-gray-500 mt-0.5">Saúde geral dos seus veículos</p>
+                                </div>
+                                <button data-section="vehicles" class="btn-navigate text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">
+                                    Ver garagem <i class="fas fa-arrow-right text-xs"></i>
+                                </button>
+                            </div>
                             <div id="vehicles-overview" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 <!-- Dynamic content -->
                             </div>
@@ -2226,22 +2438,31 @@
 
                     <!-- VEHICLES SECTION -->
                     <div id="section-vehicles" class="hidden space-y-6 animate-fade-in">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div class="flex items-center gap-4">
-                                <select id="vehicle-filter" class="px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none bg-white font-medium">
-                                    <option value="all">Todos os veículos</option>
-                                    <option value="active">Ativos</option>
-                                    <option value="maintenance">Em manutenção</option>
-                                </select>
-                                <div class="view-toggle" role="group" aria-label="Alternar visualização dos veículos">
+                        <!-- Garagem Header -->
+                        <div class="bg-gradient-to-r from-slate-800 to-slate-700 rounded-2xl p-5 text-white">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div>
+                                    <h3 class="text-xl font-bold">Minha Garagem</h3>
+                                    <p class="text-slate-300 text-sm mt-1">Gerencie seus veículos e acompanhe manutenções</p>
+                                </div>
+                                <button id="btn-add-vehicle" class="bg-blue-500 hover:bg-blue-400 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all font-semibold shadow-lg flex-shrink-0">
+                                    <i class="fas fa-plus"></i>
+                                    Adicionar Veículo
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-3 mt-4">
+                                <div class="flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2">
+                                    <select id="vehicle-filter" class="bg-transparent text-white text-sm font-medium outline-none cursor-pointer">
+                                        <option value="all" class="text-gray-800">Todos os veículos</option>
+                                        <option value="active" class="text-gray-800">Ativos</option>
+                                        <option value="maintenance" class="text-gray-800">Em manutenção</option>
+                                    </select>
+                                </div>
+                                <div class="view-toggle-dark" role="group" aria-label="Alternar visualização">
                                     <button id="vehicles-view-garage" type="button" class="active">Garagem</button>
                                     <button id="vehicles-view-list" type="button">Lista</button>
                                 </div>
                             </div>
-                            <button id="btn-add-vehicle" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-blue-600/30 font-semibold">
-                                <i class="fas fa-plus"></i>
-                                Adicionar Veículo
-                            </button>
                         </div>
 
                         <div id="vehicles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
